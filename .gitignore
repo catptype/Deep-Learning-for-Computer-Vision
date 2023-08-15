@@ -3,4 +3,5 @@ CHECKPOINT/
 REFERENCE/
 DATASET/
 export model/
-*.ipynb
+play_ground.ipynb
+(Simple) Pixiv illust vs manga classification.ipynb
