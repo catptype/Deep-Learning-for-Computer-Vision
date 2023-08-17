@@ -77,7 +77,8 @@ class DeepLearningModel(ABC):
                 break
 
     def train(self, train_data, test_data=None, epochs=10):
-        self.model.fit(train_data, epochs=epochs, validation_data=test_data)
+        EarlyStop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0.05, patience=2, restore_best_weights=True, verbose=1)
+        self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=[EarlyStop])
 
     def evaluate(self, test_data, test_labels):
         return self.model.evaluate(test_data, test_labels)
