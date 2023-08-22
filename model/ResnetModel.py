@@ -1,4 +1,22 @@
+"""
+ResNet Models
+~~~~~~~~~~~~~
+
+This module defines a set of ResNet architectures for image classification tasks using TensorFlow and Keras.
+
+Classes:
+    - ResnetModel: Base class for ResNet architectures.
+    - Resnet18: Implementation of the ResNet-18 architecture.
+    - Resnet34: Implementation of the ResNet-34 architecture.
+    - Resnet50: Implementation of the ResNet-50 architecture.
+    - Resnet101: Implementation of the ResNet-101 architecture.
+    - Resnet152: Implementation of the ResNet-152 architecture.
+
+Note: To use these models, TensorFlow and Keras must be installed.
+"""
 import sys
+sys.dont_write_bytecode = True
+
 import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
@@ -13,11 +31,24 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
-sys.dont_write_bytecode = True
-
 
 class ResnetModel(DeepLearningModel):
+    """
+    Base class for ResNet architectures.
+    
+    Methods:
+        - Conv2D_block(input, num_feature, kernel, strides, use_skip, identity): Creates a Convolutional Block.
+        - Residual_block(input, num_feature, downsampler): Creates a residual block without bottlenecks.
+        - Residual_bottleneck(input, num_feature, downsampler): Creates a residual block with bottlenecks.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
@@ -51,10 +82,26 @@ class ResnetModel(DeepLearningModel):
 
 
 class Resnet18(ResnetModel):
+    """
+    Implementation of the ResNet-18 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet-18 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNet-18 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -91,10 +138,26 @@ class Resnet18(ResnetModel):
 
 
 class Resnet34(ResnetModel):
+    """
+    Implementation of the ResNet-34 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet-34 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNet-34 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -143,10 +206,26 @@ class Resnet34(ResnetModel):
 
 
 class Resnet50(ResnetModel):
+    """
+    Implementation of the ResNet-50 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet-50 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNet-50 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -195,10 +274,26 @@ class Resnet50(ResnetModel):
 
 
 class Resnet101(ResnetModel):
+    """
+    Implementation of the ResNet-101 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet-101 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNet-101 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -247,10 +342,26 @@ class Resnet101(ResnetModel):
 
 
 class Resnet152(ResnetModel):
+    """
+    Implementation of the ResNet-152 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNet-152 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNet-152 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
