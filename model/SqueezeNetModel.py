@@ -1,4 +1,23 @@
+"""
+SqueezeNet Models
+~~~~~~~~~~~~~~~~~
+
+This module defines a set of SqueezeNet architectures for image classification tasks using TensorFlow and Keras.
+
+Classes:
+    - SqueezeNetModel: Base class for SqueezeNet architectures.
+    - SqueezeNet: Implementation of the SqueezeNet architecture.
+    - SqueezeNet_BN: Implementation of the SqueezeNet architecture with Batch Normalization.
+    - SqueezeNet_SimpleSkip: Implementation of the SqueezeNet architecture with simple skip connections.
+    - SqueezeNet_SimpleSkip_BN: Implementation of the SqueezeNet architecture with simple skip connections and Batch Normalization.
+    - SqueezeNet_ComplexSkip: Implementation of the SqueezeNet architecture with complex skip connections.
+    - SqueezeNet_ComplexSkip_BN: Implementation of the SqueezeNet architecture with complex skip connections and Batch Normalization.
+
+Note: TensorFlow and Keras must be installed to use these models.]
+"""
 import sys
+sys.dont_write_bytecode = True
+
 import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
@@ -15,11 +34,24 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
-sys.dont_write_bytecode = True
-
 
 class SqueezeNetModel(DeepLearningModel):
+    """
+    Base class for SqueezeNet architectures.
+    
+    Methods:
+        - Conv2D_block(input, num_feature, kernel, strides, use_bn): Creates a Convolutional Block.
+        - init_block(input, use_bn): Creates the initial block of the architecture.
+        - fire_module(input, s1x1_feature, e1x1_feature, e3x3_feature, downsampler, use_bn, use_skip, identity): Creates a Fire module.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_bn=False):
@@ -45,9 +77,7 @@ class SqueezeNetModel(DeepLearningModel):
         use_skip=False,
         identity=None,
     ):
-        assert (
-            s1x1_feature < e1x1_feature + e3x3_feature
-        ), f"s1x1({s1x1_feature}) must less than sum of e1x1 and e3x3({e1x1_feature+e3x3_feature})"
+        assert (s1x1_feature < e1x1_feature + e3x3_feature), f"s1x1({s1x1_feature}) must less than sum of e1x1 and e3x3({e1x1_feature+e3x3_feature})"
 
         # Squeeze 1x1
         squeeze = self.Conv2D_block(input, s1x1_feature, kernel=1, use_bn=use_bn)
@@ -59,9 +89,7 @@ class SqueezeNetModel(DeepLearningModel):
         output = Concatenate()([expand1x1, expand3x3])
         if use_skip:
             if output.shape[-1] != identity.shape[-1]:
-                identity = self.Conv2D_block(
-                    identity, output.shape[-1], kernel=1, use_bn=use_bn
-                )
+                identity = self.Conv2D_block(identity, output.shape[-1], kernel=1, use_bn=use_bn)
             output = Add()([output, identity])
 
         if downsampler:
@@ -69,10 +97,26 @@ class SqueezeNetModel(DeepLearningModel):
         return output
 
 class SqueezeNet(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -107,10 +151,26 @@ class SqueezeNet(SqueezeNetModel):
     
 
 class SqueezeNet_BN(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture with Batch Normalization.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet_BN model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet_BN model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -145,10 +205,26 @@ class SqueezeNet_BN(SqueezeNetModel):
 
 
 class SqueezeNet_SimpleSkip(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture with simple skip connections.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet_SimpleSkip model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet_SimpleSkip model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -182,10 +258,26 @@ class SqueezeNet_SimpleSkip(SqueezeNetModel):
         return model
     
 class SqueezeNet_SimpleSkip_BN(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture with simple skip connections and Batch Normalization.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet_SimpleSkip_BN model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet_SimpleSkip_BN model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -220,10 +312,26 @@ class SqueezeNet_SimpleSkip_BN(SqueezeNetModel):
 
 
 class SqueezeNet_ComplexSkip(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture with complex skip connections.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet_ComplexSkip model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet_ComplexSkip model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -257,10 +365,26 @@ class SqueezeNet_ComplexSkip(SqueezeNetModel):
         return model
 
 class SqueezeNet_ComplexSkip_BN(SqueezeNetModel):
+    """
+    Implementation of the SqueezeNet architecture with complex skip connections and Batch Normalization.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the SqueezeNet_ComplexSkip_BN model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the SqueezeNet_ComplexSkip_BN model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
