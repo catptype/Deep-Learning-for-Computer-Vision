@@ -1,4 +1,22 @@
+"""
+ResNeXt Models
+~~~~~~~~~~~~~~
+
+This module defines a set of ResNeXt architectures for image classification tasks using TensorFlow and Keras.
+
+Classes:
+    - ResNeXtModel: Base class for ResNeXt architectures.
+    - ResNeXt18: Implementation of the ResNeXt-18 architecture.
+    - ResNeXt34: Implementation of the ResNeXt-34 architecture.
+    - ResNeXt50: Implementation of the ResNeXt-50 architecture.
+    - ResNeXt101: Implementation of the ResNeXt-101 architecture.
+    - ResNeXt152: Implementation of the ResNeXt-152 architecture.
+
+Note: To use these models, TensorFlow and Keras must be installed.
+"""
 import sys
+sys.dont_write_bytecode = True
+
 import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
@@ -14,11 +32,24 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
-sys.dont_write_bytecode = True
-
 
 class ResNeXtModel(DeepLearningModel):
+    """
+    Base class for ResNeXt architectures.
+    
+    Methods:
+        - Conv2D_block(input, num_feature, kernel, strides, use_skip, identity): Creates a Convolutional Block.
+        - Resnext_block(input, num_feature, cardinality, downsampler): Creates a ResNeXt block.
+        - Resnext_bottleneck(input, num_feature, cardinality, downsampler): Creates a ResNeXt bottleneck block.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
@@ -72,26 +103,34 @@ class ResNeXtModel(DeepLearningModel):
         x = Concatenate()(group)
 
         if downsampler:
-            x = self.Conv2D_block(
-                x,
-                num_feature * 2,
-                kernel=1,
-                use_skip=True,
-                identity=MaxPooling2D()(input),
-            )
+            x = self.Conv2D_block(x, num_feature * 2, kernel=1, use_skip=True, identity=MaxPooling2D()(input))
         else:
-            x = self.Conv2D_block(
-                x, num_feature * 2, kernel=1, use_skip=True, identity=input
-            )
+            x = self.Conv2D_block(x, num_feature * 2, kernel=1, use_skip=True, identity=input)
 
         return x
 
 
 class ResNeXt18(ResNeXtModel):
+    """
+    Implementation of the ResNeXt-18 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt-18 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNeXt-18 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -128,10 +167,26 @@ class ResNeXt18(ResNeXtModel):
 
 
 class ResNeXt34(ResNeXtModel):
+    """
+    Implementation of the ResNeXt-34 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt-34 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNeXt-34 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -180,10 +235,26 @@ class ResNeXt34(ResNeXtModel):
 
 
 class ResNeXt50(ResNeXtModel):
+    """
+    Implementation of the ResNeXt-50 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt-50 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNeXt-50 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -232,10 +303,26 @@ class ResNeXt50(ResNeXtModel):
 
 
 class ResNeXt101(ResNeXtModel):
+    """
+    Implementation of the ResNeXt-101 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt-101 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNeXt-101 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -284,10 +371,26 @@ class ResNeXt101(ResNeXtModel):
 
 
 class ResNeXt152(ResNeXtModel):
+    """
+    Implementation of the ResNeXt-152 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the ResNeXt-152 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the ResNeXt-152 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
