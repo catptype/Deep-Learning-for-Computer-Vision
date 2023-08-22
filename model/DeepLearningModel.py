@@ -1,10 +1,8 @@
 import sys
+sys.dont_write_bytecode = True
 import tensorflow as tf
 from abc import ABC, abstractmethod
 from tensorflow.keras import mixed_precision
-
-sys.dont_write_bytecode = True
-
 
 class DeepLearningModel(ABC):
     def __init__(self, image_size, num_classes):
@@ -76,13 +74,8 @@ class DeepLearningModel(ABC):
                 )
                 break
 
-    def train(self, train_data, test_data=None, epochs=10):
-        EarlyStop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', 
-                                                     min_delta=0.01, 
-                                                     patience=5, 
-                                                     restore_best_weights=True, 
-                                                     verbose=1)
-        self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=[EarlyStop])
+    def train(self, train_data, test_data=None, epochs=10, callbacks=None):
+        self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=callbacks)
 
     def evaluate(self, test_data, test_labels):
         return self.model.evaluate(test_data, test_labels)
