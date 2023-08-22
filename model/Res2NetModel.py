@@ -12,7 +12,6 @@ Classes:
 
 Note: To use these models, TensorFlow and Keras must be installed.
 """
-
 import sys
 sys.dont_write_bytecode = True
 
