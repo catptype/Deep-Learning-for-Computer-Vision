@@ -1,4 +1,22 @@
+"""
+VGG Models
+~~~~~~~~~~
+
+This module defines a set of VGG architectures for image classification tasks using TensorFlow and Keras.
+
+Classes:
+    - VGGModel: Base class for VGG architectures.
+    - CustomVGG: Implementation of a custom VGG architecture.
+    - VGG11: Implementation of the VGG11 architecture.
+    - VGG13: Implementation of the VGG13 architecture.
+    - VGG16: Implementation of the VGG16 architecture.
+    - VGG19: Implementation of the VGG19 architecture.
+
+Note: TensorFlow and Keras must be installed to use these models.
+"""
 import sys
+sys.dont_write_bytecode = True
+
 import tensorflow as tf
 from tensorflow.keras.layers import (
     BatchNormalization,
@@ -12,11 +30,22 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
-sys.dont_write_bytecode = True
-
 
 class VGGModel(DeepLearningModel):
+    """
+    Base class for VGG architectures.
+    
+    Methods:
+        - Conv2D_block(input, num_feature, kernel, use_bn, downsampler): Creates a Convolutional Block.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the VGG model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def Conv2D_block(self, input, num_feature, kernel=3, use_bn=False, downsampler=False):
@@ -30,10 +59,26 @@ class VGGModel(DeepLearningModel):
 
 
 class CustomVGG(VGGModel):
+    """
+    Implementation of a custom VGG architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the CustomVGG model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the CustomVGG model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -64,10 +109,26 @@ class CustomVGG(VGGModel):
 
 
 class VGG11(VGGModel):
+    """
+    Implementation of the VGG11 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the VGG11 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the VGG11 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -104,10 +165,26 @@ class VGG11(VGGModel):
 
 
 class VGG13(VGGModel):
+    """
+    Implementation of the VGG13 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the VGG13 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the VGG13 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -146,10 +223,26 @@ class VGG13(VGGModel):
 
 
 class VGG16(VGGModel):
+    """
+    Implementation of the VGG16 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the VGG16 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the VGG13 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -191,10 +284,26 @@ class VGG16(VGGModel):
 
 
 class VGG19(VGGModel):
+    """
+    Implementation of the VGG19 architecture.
+    """
     def __init__(self, image_size, num_classes):
+        """
+        Initializes the VGG19 model with specified parameters.
+        
+        Args:
+            - image_size (int): The input image size.
+            - num_classes (int): The number of output classes.
+        """
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def build_model(self):
+        """
+        Builds the VGG19 model.
+        
+        Returns:
+            - model: The built Keras model.
+        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
