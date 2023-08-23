@@ -1,5 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
+
 import tensorflow as tf
 from abc import ABC, abstractmethod
 from tensorflow.keras import mixed_precision
@@ -24,7 +25,7 @@ class DeepLearningModel(ABC):
         self.model.summary()
 
     def compile(self, 
-                optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
                 loss=tf.losses.CategoricalCrossentropy(),
                 metrics=["accuracy"]):
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
