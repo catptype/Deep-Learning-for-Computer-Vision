@@ -31,6 +31,7 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
+from .SE_Module import SE_Module
 
 
 class Res2NetModel(DeepLearningModel):
@@ -69,28 +70,6 @@ class Res2NetModel(DeepLearningModel):
         x = ReLU()(x)
         return x
     
-    def SE_block(self, input, identity, ratio=16):
-        # Get the number of channels from the input tensor
-        num_channels = input.shape[-1]
-
-        # Squeeze: Global average pooling across the spatial dimensions
-        x = GlobalAveragePooling2D()(input)
-
-        # Excitation: Two dense layers
-        x = Dense(num_channels // ratio, activation="relu")(x)
-        x = Dense(num_channels, activation="sigmoid")(x)
-
-        # Reshape to (batch_size, 1, 1, num_channels)
-        x = Reshape((1, 1, num_channels))(x)
-
-        # Scale the input tensor with the computed channel-wise scaling factors
-        x = Multiply()([input, x])
-        if x.shape[-1] != identity.shape[-1]:
-            identity = self.Conv2D_block(identity, x.shape[-1], kernel=1)
-        x = Add()([identity, x])
-
-        return x
-
     def Residual_bottleneck(self, input, num_feature):
         module_output = []
 
@@ -114,7 +93,8 @@ class Res2NetModel(DeepLearningModel):
 
         if self.use_se:
             x = self.Conv2D_block(x, num_feature, kernel=1)
-            x = self.SE_block(input=x, identity=input)
+            with tf.name_scope("SE_Module"):
+                x = SE_Module()(input=x, identity=input)
         else:
             x = self.Conv2D_block(x, num_feature, kernel=1, use_skip=True, identity=input)
 
