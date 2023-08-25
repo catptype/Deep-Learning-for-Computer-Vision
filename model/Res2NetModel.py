@@ -108,7 +108,7 @@ class Res2NetModel(DeepLearningModel):
         avg_pool = tf.expand_dims(avg_pool, axis=-1)
         
         spatial_attention = Concatenate()([max_pool, avg_pool])
-        spatial_attention = Conv2D(1, (7,7), padding='same', activation='sigmoid', kernel_initializer='he_normal')(spatial_attention)
+        spatial_attention = Conv2D(1, (7,7), padding='same', activation='sigmoid', kernel_initializer='glorot_normal')(spatial_attention)
 
         output = Multiply()([input, spatial_attention])
         return output
