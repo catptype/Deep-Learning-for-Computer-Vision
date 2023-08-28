@@ -145,8 +145,7 @@ class Res2NetModel(DeepLearningModel):
 
         elif self.module == 'se':
             x = self.Conv2D_block(x, num_feature, kernel=1)
-            with tf.name_scope("SE_Module"):
-                x = SE_Module()(input=x, identity=input)
+            x = SE_Module()(input=x, identity=input)
 
         elif self.module == 'cbam':
             x = self.Conv2D_block(x, num_feature, kernel=1)
