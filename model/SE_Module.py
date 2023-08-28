@@ -21,6 +21,8 @@ class SE_Module(Layer):
     This module performs channel-wise feature recalibration to enhance
     important features and suppress less important ones.
     """
+    num_instances = 0
+
     def __init__(self, ratio=16, **kwargs):
         """
         Initialize the SE_Module.
@@ -28,7 +30,9 @@ class SE_Module(Layer):
         Parameters:
             ratio (int): Reduction ratio for the dense layers.
         """
-        super(SE_Module, self).__init__(**kwargs)
+        SE_Module.num_instances += 1
+        layer_name = f"SE_module_{SE_Module.num_instances}"
+        super(SE_Module, self).__init__(name=layer_name, **kwargs)
         self.ratio = ratio
     
     def build(self, input_shape):
@@ -47,8 +51,7 @@ class SE_Module(Layer):
         self.Conv2D = Conv2D(self.num_channels, (1, 1), padding="same", kernel_initializer="he_normal")
         self.BatchNorm = BatchNormalization()
 
-        with tf.name_scope(self.name):  # Use name_scope to manage naming
-            super().build(input_shape)
+        super().build(input_shape)
 
     def call(self, input, identity):
         """
