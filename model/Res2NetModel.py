@@ -17,47 +17,41 @@ sys.dont_write_bytecode = True
 
 import tensorflow as tf
 from tensorflow.keras.layers import (
-    Activation,
     Add,
     BatchNormalization,
     Concatenate,
     Conv2D,
     Dense,
     GlobalAveragePooling2D,
-    GlobalMaxPool2D,
     Input,
     MaxPooling2D,
-    Multiply,
     ReLU,
-    Reshape,
 )
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 from .SE_Module import SE_Module
+from .CBAM_Module import CBAM_Module
 
 
 class Res2NetModel(DeepLearningModel):
     """
     Base class for Res2Net architectures.
-    
-    Attributes:
-        - scale: The scale factor for the Res2Net model.
-        - use_se: Whether to use Squeeze-and-Excitation (SE) blocks.
-    
+
     Methods:
-        - Conv2D_block(input, num_feature, kernel, strides, use_skip, identity): Creates a Convolutional Block.
-        - SE_block(input, identity, ratio): Creates a Squeeze-and-Excitation (SE) block.
-        - Residual_bottleneck(input, num_feature): Creates a Residual Bottleneck block.
+        - Conv2D_block(input, num_feature, kernel, strides, use_skip, identity): Defines a convolutional block with optional skip connection.
+        - Residual_bottleneck(input, num_feature): Defines a residual bottleneck block for the Res2Net architecture.
     """
     def __init__(self, image_size, num_classes, scale, module):
         """
-        Initializes the Res2Net model with specified parameters.
+        Initializes the ResNet model with specified parameters.
         
         Args:
             - image_size (int): The input image size.
             - num_classes (int): The number of output classes.
-            - **kwargs: Additional keyword arguments.
+            - scale (int): The scale factor for the model.
+            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
+
         assert module is None or module == 'se' or module == 'cbam', f"module value must be 1:None, 2:'se', 3:'cbam', current ({module})"
         self.scale = scale
         self.module = module
@@ -73,52 +67,6 @@ class Res2NetModel(DeepLearningModel):
         x = ReLU()(x)
         return x
     
-    def Channel_Attention(self, input, ratio=16):
-        num_channel = input.shape[-1]
-        
-        # Shared layers
-        w0 = Dense(num_channel // ratio, activation='relu', kernel_initializer='he_normal')
-        w1 = Dense(num_channel, kernel_initializer='he_normal')
-
-        # Global Max Pool
-        GMP_pool = GlobalMaxPool2D()(input)
-        GMP_pool = w0(GMP_pool)
-        GMP_pool = w1(GMP_pool)
-
-        # Global Average Pool
-        GAP_pool = GlobalAveragePooling2D()(input)
-        GAP_pool = w0(GAP_pool)
-        GAP_pool = w1(GAP_pool)
-   
-        channel_attention = Add()([GMP_pool, GAP_pool])
-        channel_attention = Activation('sigmoid')(channel_attention)
-
-        output = Multiply()([input, channel_attention])
-        
-        return output
-    
-    def Spatial_Attention(self, input):
-
-        # Max pool 
-        max_pool = tf.reduce_max(input, axis=-1)
-        max_pool = tf.expand_dims(max_pool, axis=-1)
-        
-        # Average pool
-        avg_pool = tf.reduce_mean(input, axis=-1)
-        avg_pool = tf.expand_dims(avg_pool, axis=-1)
-        
-        spatial_attention = Concatenate()([max_pool, avg_pool])
-        spatial_attention = Conv2D(1, (7,7), padding='same', activation='sigmoid', kernel_initializer='glorot_normal')(spatial_attention)
-
-        output = Multiply()([input, spatial_attention])
-        return output
-    
-    def CBAM(self, input, ratio=16):
-        x = self.Channel_Attention(input, ratio)
-        x = self.Spatial_Attention(x)
-        return x
-    
-
     def Residual_bottleneck(self, input, num_feature):
         module_output = []
 
@@ -150,7 +98,7 @@ class Res2NetModel(DeepLearningModel):
         elif self.module == 'cbam':
             x = self.Conv2D_block(x, num_feature, kernel=1)
             identity = x
-            x = self.CBAM(x)
+            x = CBAM_Module(ratio=16)(x)
             x = Add()([x, identity])
 
         return x
@@ -168,7 +116,7 @@ class Res2Net50(Res2NetModel):
             - image_size (int): The input image size.
             - num_classes (int): The number of output classes.
             - scale (int): The scale factor for the model.
-            - use_se (bool): Whether to use Squeeze-and-Excitation (SE) blocks.
+            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
         super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
 
@@ -229,7 +177,7 @@ class Res2Net101(Res2NetModel):
             - image_size (int): The input image size.
             - num_classes (int): The number of output classes.
             - scale (int): The scale factor for the model.
-            - use_se (bool): Whether to use Squeeze-and-Excitation (SE) blocks.
+            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
         super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
 
@@ -290,7 +238,7 @@ class Res2Net152(Res2NetModel):
             - image_size (int): The input image size.
             - num_classes (int): The number of output classes.
             - scale (int): The scale factor for the model.
-            - use_se (bool): Whether to use Squeeze-and-Excitation (SE) blocks.
+            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
         super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
 
