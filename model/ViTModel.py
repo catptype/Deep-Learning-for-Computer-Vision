@@ -14,23 +14,52 @@ from tensorflow.keras.layers import (
 )
 import tensorflow as tf
 from .DeepLearningModel import DeepLearningModel
-  
+
+class ImagePatcher(Layer):
+    """
+    ImagePatcher: Splits the input image into patches.
+
+    Args:
+        patch_size (int): Size of each image patch.
+    
+    """
+    def __init__(self, patch_size):
+        self.patch_size = patch_size
+        super(ImagePatcher, self).__init__(name="Image_Patcher")
+    
+    def call(self, input):
+        """
+        Applies image patching to the input image.
+
+        Args:
+            input (tensor): Input image tensor.
+
+        Returns:
+            image_patch (tensor): Patches extracted from the input image.
+
+        """                
+        image_patch = tf.image.extract_patches(
+            images=input,
+            sizes=[1, self.patch_size, self.patch_size, 1],
+            strides=[1, self.patch_size, self.patch_size, 1],
+            rates=[1, 1, 1, 1],
+            padding="VALID",
+        ) 
+        num_patch = image_patch.shape[1] * image_patch.shape[2]
+        image_patch = tf.reshape(image_patch, (-1, num_patch, image_patch.shape[-1]))
+        return image_patch
+
+
 class PatchEncoder(Layer):
     """
     PatchEncoder layer: Encodes image patches and applies linear projection with positional embedding.
 
     Args:
-        patch_size (int): Size of the image patch.
-        num_patch (int): Number of patches in the image.
+        num_patch (int): Number of image patches.
         latent_size (int): Size of the latent space.
 
-    Attributes:
-        patch_size (int): Size of the image patch.
-        num_patch (int): Number of patches in the image.
-        latent_size (int): Size of the latent space.
     """
-    def __init__(self, patch_size, num_patch, latent_size):
-        self.patch_size = patch_size
+    def __init__(self, num_patch, latent_size):
         self.num_patch = num_patch
         self.latent_size = latent_size
         super(PatchEncoder, self).__init__(name="Patch_Encoder")
@@ -49,29 +78,18 @@ class PatchEncoder(Layer):
 
     def call(self, input):
         """
-        Applies the PatchEncoder layer to the input tensor.
+        Applies patch encoding to the input patches.
 
         Args:
-            input (tensor): Input tensor containing the image.
+            input (tensor): Input patches tensor.
 
         Returns:
-            output (tensor): Encoded tensor with patch embeddings.
+            output (tensor): Encoded patches with positional embeddings.
 
         """
-        # Patching image
-        patch = tf.image.extract_patches(
-            images=input,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        patch = tf.reshape(patch, (-1, self.num_patch, patch.shape[-1]))
-
         # Linear projection and Positional embedding
         embedding_input = tf.range(start=0, limit=self.num_patch, delta=1)
-        output = self.linear_projection(patch) + self.positional_embedding(embedding_input)
-
+        output = self.linear_projection(input) + self.positional_embedding(embedding_input)
         return output
 
 
@@ -83,9 +101,6 @@ class TransformerEncoder(Layer):
         num_head (int): Number of attention heads.
         latent_size (int): Size of the latent space.
 
-    Attributes:
-        num_head (int): Number of attention heads.
-        latent_size (int): Size of the latent space.
     """
     num_instances = 0
 
@@ -104,8 +119,8 @@ class TransformerEncoder(Layer):
             input_shape (tuple): Shape of the input tensor.
 
         """
-        self.layer_norm1 = LayerNormalization()
-        self.layer_norm2 = LayerNormalization()
+        self.layer_norm1 = LayerNormalization(epsilon=1e-6)
+        self.layer_norm2 = LayerNormalization(epsilon=1e-6)
         self.multi_head = MultiHeadAttention(self.num_head, self.latent_size)
         self.mlp1 = Dense(self.latent_size, activation="gelu")
         self.mlp2 = Dense(self.latent_size, activation="gelu")
@@ -145,6 +160,7 @@ class ViTModel(DeepLearningModel):
         latent_size (int): Size of the latent space.
         num_layer (int): Number of transformer layers.
         mlp_size (int): Size of the multi-layer perceptron.
+
     """
     def __init__(
         self,
@@ -172,19 +188,21 @@ class ViTModel(DeepLearningModel):
         Returns:
             model (tensorflow.keras.Model): Compiled ViT model.
 
-        """        
+        """       
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
-        # Image patch encoder
-        x = PatchEncoder(patch_size=self.patch_size,
-                         num_patch=(self.image_size // self.patch_size) ** 2,
-                         latent_size=self.latent_size)(input)
+        # Image patcher
+        x = ImagePatcher(patch_size=self.patch_size)(input)
+
+        # Patch encoder
+        x = PatchEncoder(num_patch=x.shape[1], latent_size=self.latent_size)(x)
 
         # Transformer encoder
         for _ in range(self.num_layer):
             x = TransformerEncoder(num_head=self.num_head, latent_size=self.latent_size)(x)
 
+        # Classification
         x = Flatten()(x)
         x = Dense(self.mlp_size, activation="gelu")(x)
         x = Dense(self.mlp_size, activation="gelu")(x)
