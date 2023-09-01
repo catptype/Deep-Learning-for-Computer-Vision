@@ -16,6 +16,7 @@ class DeepLearningModel(ABC):
         self.image_size = image_size
         self.num_classes = num_classes
         self.model = self.build_model()
+        self.history = None
 
     @abstractmethod
     def build_model(self):
@@ -76,7 +77,17 @@ class DeepLearningModel(ABC):
                 break
 
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
-        self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=callbacks)
+        if self.history is None:
+            # Train the model from scratch and store the training history
+            self.history = self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=callbacks)
+        else:
+            print("Continuing training from epoch", max(self.history.epoch) + 1)
+            new_history = self.model.fit(train_data, initial_epoch=max(self.history.epoch)+1, epochs=epochs, validation_data=test_data, callbacks=callbacks)
+            
+            # Update the training history with the new epoch values and metrics
+            self.history.epoch += [epoch for epoch in new_history.epoch]
+            for key in self.history.history.keys():
+                self.history.history[key] += new_history.history[key]
 
     def evaluate(self, test_data, test_labels):
         return self.model.evaluate(test_data, test_labels)
