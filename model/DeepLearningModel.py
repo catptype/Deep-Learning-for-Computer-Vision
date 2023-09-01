@@ -6,12 +6,31 @@ from abc import ABC, abstractmethod
 from tensorflow.keras import mixed_precision
 
 class DeepLearningModel(ABC):
+    """
+    Abstract base class for deep learning models.
+
+    Attributes:
+        image_size (int): The size of input images.
+        num_classes (int): The number of classes for classification.
+        model (tf.keras.Model): The neural network model.
+        history (tf.keras.callbacks.History): Training history.
+
+    Methods:
+        build_model(): Abstract method to build the neural network architecture.
+        summary(): Display a summary of the model's architecture.
+        compile(optimizer, loss, metrics): Compile the model for training.
+        train(train_data, test_data, epochs, callbacks): Train the model.
+        evaluate(test_data, test_labels): Evaluate the model on test data.
+        predict(data): Make predictions on input data.
+        save(): Save the trained model to a file.
+    """
     def __init__(self, image_size, num_classes):
         """
-        image_size (int): The size of input images for the model.
-        num_classes (int): The number of classes for classification tasks.
-        optimizer (tf.keras.optimizers.Optimizer): The optimizer to use for model training.
-        loss (tf.keras.losses.Loss): The loss function to use for model training.
+        Initialize the DeepLearningModel instance.
+
+        Args:
+            image_size (tuple): The size of input images (height, width, channels).
+            num_classes (int): The number of classes for classification.
         """
         self.image_size = image_size
         self.num_classes = num_classes
@@ -20,63 +39,40 @@ class DeepLearningModel(ABC):
 
     @abstractmethod
     def build_model(self):
+        """
+        Abstract method to build the neural network architecture.
+        Subclasses must implement this method.
+        """
         pass
 
     def summary(self):
+        """Display a summary of the model's architecture."""
         self.model.summary()
 
     def compile(self, 
                 optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
                 loss=tf.losses.CategoricalCrossentropy(),
                 metrics=["accuracy"]):
+        """
+        Compile the model for training.
+
+        Args:
+            optimizer (tf.keras.optimizers.Optimizer): The optimizer for training.
+            loss (tf.keras.losses.Loss): The loss function.
+            metrics (list): List of metrics to monitor during training.
+        """
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-    def train_checkpoint(self, train_data, test_data=None, epochs=10, save_interval=5):
-        if "mixed_float16" in str(mixed_precision.global_policy()):
-            ckpt = tf.train.Checkpoint(optimizer=self.model.optimizer, model=self.model)
-            ckpt_dir = f"CHECKPOINT/{self.model.name}_fp16/"
-        else:
-            ckpt = tf.train.Checkpoint(optimizer=self.optimizer, model=self.model)
-            ckpt_dir = f"CHECKPOINT/{self.model.name}/"
-        ckpt_manager = tf.train.CheckpointManager(ckpt, ckpt_dir, max_to_keep=3)
-
-        latest_checkpoint = tf.train.latest_checkpoint(ckpt_dir)
-
-        if latest_checkpoint is not None:
-            print(f"Resuming training from checkpoint: {latest_checkpoint}\n")
-            self.model.load_weights(latest_checkpoint)
-            current_epoch = int(latest_checkpoint.split("-")[-1])
-            initial_epoch = current_epoch * save_interval
-        else:
-            print("No checkpoint found")
-            initial_epoch = 0
-
-        while initial_epoch < epochs:
-            process_epoch = initial_epoch + save_interval
-
-            if process_epoch < epochs:
-                self.model.fit(
-                    train_data,
-                    initial_epoch=initial_epoch,
-                    epochs=process_epoch,
-                    validation_data=test_data,
-                )
-
-                print(f"Saving checkpoint at Epoch {process_epoch} ... ", end="")
-                ckpt_manager.save(checkpoint_number=process_epoch // save_interval)
-                print("Done")
-
-                initial_epoch += save_interval
-            else:
-                self.model.fit(
-                    train_data,
-                    initial_epoch=initial_epoch,
-                    epochs=epochs,
-                    validation_data=test_data,
-                )
-                break
-
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
+        """
+        Train the model.
+
+        Args:
+            train_data: Training data.
+            test_data: Validation data (optional).
+            epochs (int): Number of training epochs.
+            callbacks (list): List of callbacks for training.
+        """
         if self.history is None:
             # Train the model from scratch and store the training history
             self.history = self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=callbacks)
@@ -90,12 +86,32 @@ class DeepLearningModel(ABC):
                 self.history.history[key] += new_history.history[key]
 
     def evaluate(self, test_data, test_labels):
+        """
+        Evaluate the model on test data.
+
+        Args:
+            test_data: Test data.
+            test_labels: Ground truth labels for test data.
+
+        Returns:
+            List of evaluation metrics.
+        """
         return self.model.evaluate(test_data, test_labels)
 
     def predict(self, data):
+        """
+        Make predictions on input data.
+
+        Args:
+            data: Input data for predictions.
+
+        Returns:
+            Model predictions.
+        """
         return self.model.predict(data)
 
     def save(self):
+        """Save the trained model to a file."""
         model_name = self.model.name
         if "mixed_float16" in str(mixed_precision.global_policy()):
             model_name += "_fp16"
