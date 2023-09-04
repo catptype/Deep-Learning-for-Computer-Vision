@@ -229,6 +229,7 @@ class ViTModel(DeepLearningModel):
         mlp_size,
     ):
         assert image_size % patch_size == 0, f"Image size ({image_size}) is not divisible by Patch size ({patch_size})"
+        assert latent_size % num_head == 0, f"Latent size ({latent_size}) is not divisible by number of attention heads ({num_head})"
 
         self.patch_size = patch_size
         self.num_head = num_head
