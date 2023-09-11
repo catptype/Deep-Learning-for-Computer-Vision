@@ -5,11 +5,14 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (
     Add,
     Concatenate,
+    Conv2D,
     Dense,
     Embedding,
+    Flatten,
     Input,
     Layer,
     LayerNormalization,
+    MaxPooling2D,
     MultiHeadAttention,
 )
 import tensorflow as tf
@@ -57,7 +60,67 @@ class ClassToken(Layer):
 
         output = Concatenate(axis=1)([c_token, input])
         return output
+
+
+class ConvToken(Layer):
+    """
+    ConvToken - A custom Keras layer for creating convolutional token embeddings.
+
+    This class defines a custom Keras layer that takes a list of convolutional layer configurations
+    and applies them sequentially to the input tensor. Each convolutional layer is followed by
+    max-pooling, and the final output is a reshaped tensor representing token embeddings.
+
+    Attributes:
+        conv_layer (list): A list of integers representing the number of features for each
+                        convolutional layer.
+
+    """
+    def __init__(self, conv_layer):
+        """
+        Constructor method for initializing the ConvToken layer.
+
+        Args:
+            conv_layer (list): A list of integers representing the number of features
+                               for each convolutional layer.
+        """
+        self.conv_layer = conv_layer
+        super(ConvToken, self).__init__(name="ConvToken")
     
+    def build(self, input_shape):
+        """
+        Method for building the ConvToken layer with the specified input shape.
+
+        Args:
+            input_shape (tuple): The shape of the input tensor.
+
+        Note:
+            This method creates a list of Conv2D layers based on the configuration provided
+            in the `conv_layer` attribute.
+
+        """
+        self.conv2d_list = [Conv2D(num_feature, (3,3), padding="same", activation='relu', kernel_initializer="he_normal") for num_feature in self.conv_layer]
+        super().build(input_shape)
+    
+    def call(self, input):
+        """
+        Method for performing the forward pass of the ConvToken layer.
+
+        Args:
+            input (tensor): The input tensor.
+
+        Returns:
+            output (tensor): The output tensor after applying convolutional layers and max-pooling.
+        """
+        for idx, _ in enumerate(self.conv_layer):
+            if idx == 0:
+                x = self.conv2d_list[idx](input)
+            else:
+                x = self.conv2d_list[idx](x)
+            x = MaxPooling2D()(x)
+        num_patch = x.shape[1] * x.shape[2]
+        output = tf.reshape(x, (-1, num_patch, x.shape[-1]))
+        return output
+
 
 class ImagePatcher(Layer):
     """
@@ -266,5 +329,177 @@ class ViTModel(DeepLearningModel):
         output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x[:, 0, :])
 
         model_name = f"ViT_I{self.image_size}x{self.image_size}_P{self.patch_size}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
+        model = Model(inputs=[input], outputs=output, name=model_name)
+        return model
+    
+
+class CVTModel(DeepLearningModel):
+    """
+    CVTModel - A custom deep learning model for Compact Vision Transformers (CVT).
+
+    This class defines a custom deep learning model for Compact Vision Transformers (CVT)
+    that consists of an image patcher, patch encoder, transformer encoder, sequence pooling, and a classification head.
+
+    Attributes:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        patch_size (int): The size of image patches.
+        num_classes (int): The number of output classes for classification.
+        num_head (int): The number of attention heads in the transformer.
+        latent_size (int): The latent dimension size for patch embeddings.
+        num_layer (int): The number of transformer encoder layers.
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
+
+    """
+    def __init__(
+        self,
+        image_size,
+        patch_size,
+        num_classes,
+        num_head,
+        latent_size,
+        num_layer,
+        mlp_size,
+    ):
+        """
+        Constructor method for initializing the CVTModel.
+
+        Args:
+            image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+            patch_size (int): The size of image patches.
+            num_classes (int): The number of output classes for classification.
+            num_head (int): The number of attention heads in the transformer.
+            latent_size (int): The latent dimension size for patch embeddings.
+            num_layer (int): The number of transformer encoder layers.
+            mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
+        """
+        assert image_size % patch_size == 0, f"Image size ({image_size}) is not divisible by Patch size ({patch_size})"
+        assert latent_size % num_head == 0, f"Latent size ({latent_size}) is not divisible by number of attention heads ({num_head})"
+
+        self.patch_size = patch_size
+        self.num_head = num_head
+        self.latent_size = latent_size
+        self.num_layer = num_layer
+        self.mlp_size = mlp_size
+        super().__init__(image_size=image_size, num_classes=num_classes)
+
+    def build_model(self):
+        """
+        Method for building the CVTModel architecture and returning the Keras model.
+
+        Returns:
+            model (Model): The Keras model representing the CVTModel.
+        """
+        # Input layer
+        input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
+
+        # Image patcher
+        x = ImagePatcher(patch_size=self.patch_size)(input)
+        num_patch = x.shape[1]
+
+        # Patch encoder
+        x = PatchEncoder(num_patch=num_patch, latent_size=self.latent_size)(x)
+
+        # Transformer encoder
+        for _ in range(self.num_layer):
+            x = TransformerEncoder(num_head=self.num_head, latent_size=self.latent_size, mlp_size=self.mlp_size)(x)
+
+        # SeqPool
+        SeqPool = Dense(1, activation="softmax")(x)        
+        SeqPool = tf.matmul(SeqPool, x, transpose_a=True)
+
+        # Classification
+        x = Flatten()(SeqPool)
+        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+
+        model_name = f"CVT_I{self.image_size}x{self.image_size}_P{self.patch_size}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
+        model = Model(inputs=[input], outputs=output, name=model_name)
+        return model
+
+
+class CCTModel(DeepLearningModel):
+    """
+    CCTModel - A custom deep learning model for Compact Convolutional Transformer (CCT).
+
+    This class defines a custom deep learning model for Compact Convolutional Transformer (CCT)
+    that combines convolutional tokenization, position embeddings, transformer encoding, sequence pooling,
+    and a classification head.
+
+    Attributes:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layers (list): A list of integers representing the number of features for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+        num_head (int): The number of attention heads in the transformer.
+        latent_size (int): The latent dimension size for patch embeddings.
+        num_layer (int): The number of transformer encoder layers.
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
+        position_embedding (bool): A flag indicating whether to include position embeddings.
+
+    """
+    def __init__(
+        self,
+        image_size,
+        conv_layer,
+        num_classes,
+        num_head,
+        latent_size,
+        num_layer,
+        mlp_size,
+        position_embedding=False,
+    ):
+        """
+        Constructor method for initializing the CCTModel.
+
+        Args:
+            image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+            conv_layer (list): A list of integers representing the number of features
+                               for each convolutional layer.
+            num_classes (int): The number of output classes for classification.
+            num_head (int): The number of attention heads in the transformer.
+            latent_size (int): The latent dimension size for patch embeddings.
+            num_layer (int): The number of transformer encoder layers.
+            mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
+            position_embedding (bool): A flag indicating whether to include position embeddings.
+        """
+        assert latent_size % num_head == 0, f"Latent size ({latent_size}) is not divisible by number of attention heads ({num_head})"
+
+        self.conv_layer = conv_layer
+        self.position_embedding = position_embedding
+        self.num_head = num_head
+        self.latent_size = latent_size
+        self.num_layer = num_layer
+        self.mlp_size = mlp_size
+        super().__init__(image_size=image_size, num_classes=num_classes)
+
+    def build_model(self):
+        """
+        Method for building the CCTModel architecture and returning the Keras model.
+
+        Returns:
+            model (Model): The Keras model representing the CCTModel.
+        """
+        # Input layer
+        input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
+
+        # Convolution Token
+        x = ConvToken(conv_layer=self.conv_layer)(input)
+        assert self.latent_size == x.shape[-1], f"Convolutional Tokenizer must has channel ({x.shape[-1]}) = embedding dimension ({self.latent_size})"
+        
+        # Patch encoder
+        if self.position_embedding:
+            x = PatchEncoder(num_patch=x.shape[1], latent_size=self.latent_size)(x)
+
+        # Transformer encoder
+        for _ in range(self.num_layer):
+            x = TransformerEncoder(num_head=self.num_head, latent_size=self.latent_size, mlp_size=self.mlp_size)(x)
+
+        # SeqPool
+        SeqPool = Dense(1, activation="softmax")(x)        
+        SeqPool = tf.matmul(SeqPool, x, transpose_a=True)
+
+        # Classification
+        x = Flatten()(SeqPool)
+        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+
+        model_name = f"CCT_I{self.image_size}x{self.image_size}_Conv{self.conv_layer}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model
