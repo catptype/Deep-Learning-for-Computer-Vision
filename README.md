@@ -11,6 +11,7 @@ My archive for coding TensorFlow Keras.
 - [ResNeXt](https://arxiv.org/abs/1611.05431)
 - [Res2Net](https://arxiv.org/abs/1904.01169)
 - [Vision Transformer (ViT)](https://arxiv.org/abs/2010.11929)
+- [Compact Transformers: CCT & CVT](https://arxiv.org/abs/2104.05704)
 
 ## Extension modules
 - [Squeeze-and-Excitation Networks (SE block)](https://arxiv.org/abs/1709.01507)
