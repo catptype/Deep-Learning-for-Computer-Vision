@@ -22,7 +22,7 @@ class DeepLearningModel(ABC):
         train(train_data, test_data, epochs, callbacks): Train the model.
         evaluate(test_data, test_labels): Evaluate the model on test data.
         predict(data): Make predictions on input data.
-        save(): Save the trained model to a file.
+        save(name): Save the trained model to a file.
     """
     def __init__(self, image_size, num_classes):
         """
@@ -110,9 +110,25 @@ class DeepLearningModel(ABC):
         """
         return self.model.predict(data)
 
-    def save(self):
-        """Save the trained model to a file."""
-        model_name = self.model.name
+    def save(self, name=None):
+        """
+        Save the trained model to a file.
+
+        Args:
+            name (str): Optional. The name to use for the saved model file (without file extension).
+                        If not provided, the model's name is used as the default name.
+
+        Note:
+            - The saved model file will have an ".h5" extension.
+            - If mixed precision training (FP16) is enabled, "_fp16" is appended to the model name.
+            - The saved model will be stored in the "export model" directory.
+        """
+        if name is None:
+            model_name = self.model.name
+        else:
+            model_name = name
+            
         if "mixed_float16" in str(mixed_precision.global_policy()):
             model_name += "_fp16"
         self.model.save(f"export model\\{model_name}.h5")
+
