@@ -41,7 +41,7 @@ class F1ScoreMetric(Metric):
         predicted probabilities to binary predictions.
     """
     def __init__(self, name='f1_score', **kwargs):
-        super(F1ScoreMetric, self).__init__(name=name, **kwargs)
+        super(F1ScoreMetric, self).__init__(name=name)
         self.TP = self.add_weight(name='true_positives', initializer='zeros')
         self.FP = self.add_weight(name='false_positives', initializer='zeros')
         self.FN = self.add_weight(name='false_negatives', initializer='zeros')
@@ -63,3 +63,16 @@ class F1ScoreMetric(Metric):
         recall    = self.TP / (self.TP + self.FN + K.epsilon())
         f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
         return f1
+    
+    def get_config(self):
+        config = super(F1ScoreMetric, self).get_config()
+        config.update({
+            'true_positives': self.TP.numpy(),
+            'false_positives': self.FP.numpy(),
+            'false_negatives': self.FN.numpy(),
+        })
+        return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
