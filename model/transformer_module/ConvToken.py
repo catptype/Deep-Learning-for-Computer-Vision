@@ -66,3 +66,9 @@ class ConvToken(Layer):
         num_patch = x.shape[1] * x.shape[2]
         output = tf.reshape(x, (-1, num_patch, x.shape[-1]))
         return output
+    
+    def get_config(self):
+        # Return a dictionary with the layer's configuration
+        config = super(ConvToken, self).get_config()
+        config['conv_layer'] = self.conv_layer
+        return config

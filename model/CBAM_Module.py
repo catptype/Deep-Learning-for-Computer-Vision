@@ -101,3 +101,9 @@ class CBAM_Module(Layer):
 
         output = Multiply()([channel_attention, spatial_attention])
         return output
+    
+    def get_config(self):
+        # Return a dictionary with the layer's configuration
+        config = super(CBAM_Module, self).get_config()
+        config['ratio'] = self.ratio
+        return config

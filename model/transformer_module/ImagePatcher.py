@@ -40,3 +40,9 @@ class ImagePatcher(Layer):
         num_patch = image_patch.shape[1] * image_patch.shape[2]
         image_patch = tf.reshape(image_patch, (-1, num_patch, image_patch.shape[-1]))
         return image_patch
+    
+    def get_config(self):
+        # Return a dictionary with the layer's configuration
+        config = super(ImagePatcher, self).get_config()
+        config['patch_size'] = self.patch_size
+        return config

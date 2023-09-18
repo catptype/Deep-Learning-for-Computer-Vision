@@ -66,3 +66,11 @@ class TransformerEncoder(Layer):
         x2 = self.mlp2(x2)
         output = Add()([x1, x2])
         return output
+    
+    def get_config(self):
+        # Return a dictionary with the layer's configuration
+        config = super(TransformerEncoder, self).get_config()
+        config['num_head'] = self.num_head
+        config['latent_size'] = self.latent_size
+        config['mlp_size'] = self.mlp_size
+        return config

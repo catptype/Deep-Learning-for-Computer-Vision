@@ -52,3 +52,10 @@ class PatchEncoder(Layer):
         output = self.linear_projection(input) + self.positional_embedding(embedding_input)
 
         return output
+    
+    def get_config(self):
+        # Return a dictionary with the layer's configuration
+        config = super(PatchEncoder, self).get_config()
+        config['num_patch'] = self.num_patch
+        config['latent_size'] = self.latent_size
+        return config
