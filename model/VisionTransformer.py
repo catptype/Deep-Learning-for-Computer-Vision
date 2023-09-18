@@ -81,3 +81,111 @@ class VisionTransformer(DeepLearningModel):
         model_name = f"ViT_I{self.image_size}x{self.image_size}_P{self.patch_size}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model
+    
+
+class ViTBase(VisionTransformer):
+    """
+    ViTBase is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+
+    Args:
+        image_size (int): The size of the input images.
+        patch_size (int): The size of image patches for self-attention.
+        num_classes (int): The number of output classes for classification.
+
+    Fixed Hyperparameters:
+        - num_head (int): Number of self-attention heads (Fixed to 12).
+        - latent_size (int): Dimensionality of latent space (Fixed to 768).
+        - num_layer (int): Number of encoder layers (Fixed to 12).
+        - mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 3072).
+
+    """
+    def __init__(self, image_size, patch_size, num_classes):
+        """
+        Initialize a ViTBase instance with specified hyperparameters.
+
+        Args:
+            image_size (int): The size of the input images.
+            patch_size (int): The size of image patches for self-attention.
+            num_classes (int): The number of output classes for classification.
+        """
+        super().__init__(
+            image_size=image_size,
+            patch_size=patch_size,
+            num_classes=num_classes,
+            num_head=12,         
+            latent_size=768,     
+            num_layer=12,        
+            mlp_size=3072        
+        )
+
+
+class ViTLarge(VisionTransformer):
+    """
+    ViTLarge is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+
+    Args:
+        image_size (int): The size of the input images.
+        patch_size (int): The size of image patches for self-attention.
+        num_classes (int): The number of output classes for classification.
+
+    Fixed Hyperparameters:
+        - num_head (int): Number of self-attention heads (Fixed to 16).
+        - latent_size (int): Dimensionality of latent space (Fixed to 1024).
+        - num_layer (int): Number of encoder layers (Fixed to 24).
+        - mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 4096).
+        
+    """
+    def __init__(self, image_size, patch_size, num_classes):
+        """
+        Initialize a ViTBase instance with specified hyperparameters.
+
+        Args:
+            image_size (int): The size of the input images.
+            patch_size (int): The size of image patches for self-attention.
+            num_classes (int): The number of output classes for classification.
+        """
+        super().__init__(
+            image_size=image_size,
+            patch_size=patch_size,
+            num_classes=num_classes,
+            num_head=16,
+            latent_size=1024,
+            num_layer=24,
+            mlp_size=4096
+        )
+
+
+class ViTHuge(VisionTransformer):
+    """
+    ViTHuge is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+
+    Args:
+        image_size (int): The size of the input images.
+        patch_size (int): The size of image patches for self-attention.
+        num_classes (int): The number of output classes for classification.
+
+    Fixed Hyperparameters:
+        - num_head (int): Number of self-attention heads (Fixed to 16).
+        - latent_size (int): Dimensionality of latent space (Fixed to 1280).
+        - num_layer (int): Number of encoder layers (Fixed to 32).
+        - mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 5120).
+        
+    """
+    def __init__(self, image_size, patch_size, num_classes):
+        """
+        Initialize a ViTBase instance with specified hyperparameters.
+
+        Args:
+            image_size (int): The size of the input images.
+            patch_size (int): The size of image patches for self-attention.
+            num_classes (int): The number of output classes for classification.
+        """
+        super().__init__(
+            image_size=image_size,
+            patch_size=patch_size,
+            num_classes=num_classes,
+            num_head=16,
+            latent_size=1280,
+            num_layer=32,
+            mlp_size=5120
+        )
