@@ -23,7 +23,7 @@ class SE_Module(Layer):
     """
     num_instances = 0
 
-    def __init__(self, ratio=16):
+    def __init__(self, ratio=16, **kwargs):
         """
         Initialize the SE_Module.
 
@@ -89,7 +89,8 @@ class SE_Module(Layer):
         return x
     
     def get_config(self):
-        # Return a dictionary with the layer's configuration
         config = super(SE_Module, self).get_config()
-        config['ratio'] = self.ratio
+        config.update({
+            'ratio': self.ratio,
+        })
         return config

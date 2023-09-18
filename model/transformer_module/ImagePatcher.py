@@ -15,9 +15,9 @@ class ImagePatcher(Layer):
         patch_size (int): The size of each square patch to be extracted from the input image.
 
     """
-    def __init__(self, patch_size):
-        self.patch_size = patch_size
+    def __init__(self, patch_size, **kwargs):
         super(ImagePatcher, self).__init__(name="Image_Patcher")
+        self.patch_size = patch_size
     
     def call(self, input):
         """
@@ -42,7 +42,12 @@ class ImagePatcher(Layer):
         return image_patch
     
     def get_config(self):
-        # Return a dictionary with the layer's configuration
         config = super(ImagePatcher, self).get_config()
-        config['patch_size'] = self.patch_size
+        config.update({
+            'patch_size': self.patch_size,
+        })
         return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

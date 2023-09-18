@@ -31,17 +31,17 @@ class CBAM_Module(Layer):
     """
     num_instances = 0
 
-    def __init__(self, ratio=16):
+    def __init__(self, ratio=16, **kwargs):
         """
         Initializes a CBAM_Module instance.
 
         Args:
             ratio (int): The reduction ratio used in the channel attention mechanism.
         """
-        self.ratio = ratio
         CBAM_Module.num_instances += 1
         layer_name = f"CBAM_Module_{CBAM_Module.num_instances}"
         super(CBAM_Module, self).__init__(name=layer_name)
+        self.ratio = ratio
 
     def build(self, input_shape):
         """
@@ -103,7 +103,8 @@ class CBAM_Module(Layer):
         return output
     
     def get_config(self):
-        # Return a dictionary with the layer's configuration
         config = super(CBAM_Module, self).get_config()
-        config['ratio'] = self.ratio
+        config.update({
+            'ratio': self.ratio,
+        })
         return config

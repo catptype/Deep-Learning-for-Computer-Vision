@@ -20,10 +20,10 @@ class PatchEncoder(Layer):
         latent_size (int): The size of the latent space for encoding.
 
     """
-    def __init__(self, num_patch, latent_size):
+    def __init__(self, num_patch, latent_size, **kwargs):
+        super(PatchEncoder, self).__init__(name="Patch_Encoder")
         self.num_patch = num_patch
         self.latent_size = latent_size
-        super(PatchEncoder, self).__init__(name="Patch_Encoder")
 
     def build(self, input_shape):
         """
@@ -54,8 +54,13 @@ class PatchEncoder(Layer):
         return output
     
     def get_config(self):
-        # Return a dictionary with the layer's configuration
         config = super(PatchEncoder, self).get_config()
-        config['num_patch'] = self.num_patch
-        config['latent_size'] = self.latent_size
+        config.update({
+            'num_patch': self.num_patch,
+            'latent_size': self.latent_size,
+        })
         return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

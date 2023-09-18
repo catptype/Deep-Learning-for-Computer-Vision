@@ -16,7 +16,7 @@ class ClassToken(Layer):
     learnable parameter used in Vision Transformers to represent global information.
 
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(ClassToken, self).__init__(name="ClassToken")
     
     def build(self, input_shape):
@@ -49,3 +49,11 @@ class ClassToken(Layer):
 
         output = Concatenate(axis=1)([c_token, input])
         return output
+    
+    def get_config(self):
+        config = super(ClassToken, self).get_config()
+        return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

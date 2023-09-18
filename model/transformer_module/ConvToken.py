@@ -21,7 +21,7 @@ class ConvToken(Layer):
                         convolutional layer.
 
     """
-    def __init__(self, conv_layer):
+    def __init__(self, conv_layer, **kwargs):
         """
         Constructor method for initializing the ConvToken layer.
 
@@ -72,3 +72,7 @@ class ConvToken(Layer):
         config = super(ConvToken, self).get_config()
         config['conv_layer'] = self.conv_layer
         return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

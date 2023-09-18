@@ -24,13 +24,13 @@ class TransformerEncoder(Layer):
     """
     num_instances = 0
 
-    def __init__(self, num_head, latent_size, mlp_size):
-        self.num_head = num_head
-        self.latent_size = latent_size
-        self.mlp_size = mlp_size
+    def __init__(self, num_head, latent_size, mlp_size, **kwargs):
         TransformerEncoder.num_instances += 1
         layer_name = f"Transformer_Encoder_{TransformerEncoder.num_instances}"
         super(TransformerEncoder, self).__init__(name=layer_name)
+        self.num_head = num_head
+        self.latent_size = latent_size
+        self.mlp_size = mlp_size
 
     def build(self, input_shape):
         """
@@ -68,9 +68,14 @@ class TransformerEncoder(Layer):
         return output
     
     def get_config(self):
-        # Return a dictionary with the layer's configuration
         config = super(TransformerEncoder, self).get_config()
-        config['num_head'] = self.num_head
-        config['latent_size'] = self.latent_size
-        config['mlp_size'] = self.mlp_size
+        config.update({
+            'num_head': self.num_head,
+            'latent_size': self.latent_size,
+            'mlp_size': self.mlp_size,
+        })
         return config
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
