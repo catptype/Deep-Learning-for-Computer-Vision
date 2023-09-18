@@ -19,19 +19,37 @@ for gpu in gpus:
 # such INFO:tensorflow:Mixed precision compatibility check (mixed_float16): OK
 tf.get_logger().setLevel('ERROR')
 
-class ImageClassificationReporter(): # Rename later TOO LONG!!
+class ImageClassificationReporter():
     """
-    Class for performing image classification and generating reports.
+    Utility class for generating classification reports from a trained image classification model.
+
+    This class allows you to generate classification reports, including a confusion matrix,
+    text-based classification report, and a visual representation of the confusion matrix.
+
+    Args:
+        h5_file (str): The path to the trained model in H5 format.
+        image_list (list): List of image file paths for prediction.
+        label_list (list): List of ground truth labels corresponding to the images.
+        class_list (list): List of class labels.
+
+    Attributes:
+        confusion_matrix (numpy.ndarray): The confusion matrix.
+        text_report (str): The text-based classification report.
+        figure_report (matplotlib.figure.Figure): The visual representation of the confusion matrix.
+
+    Methods:
+        print_report(): Print the text-based classification report.
+        export_report(): Export the visual representation of the confusion matrix as an image file.
     """
     def __init__(self, h5_file, image_list, label_list, class_list):
         """
-        Initialize the ImageClassificationReporter class.
+        Initialize the ClassificationReportGenerator instance.
 
         Args:
-            h5_file (str): Path to the pre-trained Keras model in HDF5 format.
-            image_list (list): List of image file paths to classify.
-            label_list (list): List of true labels for the images.
-            class_list (list): List of class names corresponding to labels.
+            h5_file (str): The path to the trained model in H5 format.
+            image_list (list): List of image file paths for prediction.
+            label_list (list): List of ground truth labels corresponding to the images.
+            class_list (list): List of class labels.
         """
         self.__h5_file = h5_file
         self.__image_list = image_list
@@ -42,13 +60,8 @@ class ImageClassificationReporter(): # Rename later TOO LONG!!
         self.text_report = self.__generate_text_report()
         self.figure_report = self.__generate_figure_report()
     
+    # Private methods
     def __execute(self):
-        """
-        Load the model and predict class labels for input images.
-
-        Returns:
-            list: Predicted class labels for the input images.
-        """
         print(f"Loading model ... ", end="")
         model = load_model(self.__h5_file)
         print(f"Complete")        
@@ -76,7 +89,7 @@ class ImageClassificationReporter(): # Rename later TOO LONG!!
             return model.predict(image)
         
         print("Processing class prediction ...")
-        max_threads = os.cpu_count()  # Maximum number of concurrent threads
+        max_threads = os.cpu_count() // 2  # Half number of concurrent threads
         with ThreadPoolExecutor(max_threads) as executor:
             predictions_list = list(executor.map(predict, self.__image_list))
         
@@ -84,39 +97,24 @@ class ImageClassificationReporter(): # Rename later TOO LONG!!
         predicted_class = np.argmax(predicted_class, axis=1)
         predicted_class = [self.__class_list[idx] for idx in predicted_class]
 
+        # Release memory resources explicitly
+        tf.keras.backend.clear_session()
+
         return predicted_class
 
     def __generate_confusion_matrix(self):
-        """
-        Generate the confusion matrix based on true and predicted labels.
-
-        Returns:
-            numpy.ndarray: Confusion matrix.
-        """
         print("Generating confusion matrix ... ", end="")
         matrix = confusion_matrix(self.__label_list, self.__predict_list)
         print("Complete")
         return matrix
     
     def __generate_text_report(self):
-        """
-        Generate a text-based classification report.
-
-        Returns:
-            str: Text-based classification report.
-        """
         print("Generating text based classification report ... ", end="")
         report = classification_report(self.__label_list, self.__predict_list)
         print("Complete")
         return report
     
     def __generate_figure_report(self):
-        """
-        Generate a figure displaying the confusion matrix.
-
-        Returns:
-            matplotlib.figure.Figure: Figure displaying the confusion matrix.
-        """
         print("Visualizing confusion matrix ... ", end="")
         if "/" in self.__h5_file:
             model_name = self.__h5_file.split('/')[-1].replace('.h5','')
@@ -152,6 +150,7 @@ class ImageClassificationReporter(): # Rename later TOO LONG!!
         print("Complete")
         return fig
     
+    # Public methods
     def print_report(self):
         """
         Print the text-based classification report.
@@ -161,7 +160,10 @@ class ImageClassificationReporter(): # Rename later TOO LONG!!
     
     def export_report(self):
         """
-        Export the figure report as an image file.
+        Export the visual representation of the confusion matrix as an image file.
+
+        Note:
+            - The image file will be saved with the same name as the model file (without the .h5 extension).
         """
         if "/" in self.__h5_file:
             filename = self.__h5_file.split('/')[-1].replace('.h5','')
