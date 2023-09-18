@@ -46,7 +46,7 @@ class DenseNetModel(DeepLearningModel):
         - Dense_block(input, num_feature, num_layer): Creates a dense block with a given number of layers.
         - Transit_block(input): Creates a transition block with AveragePooling.
     """
-    def __init__(self, image_size, num_classes, **kwargs):
+    def __init__(self, image_size, num_classes, growth_rate):
         """
         Initializes the DenseNet model with specified parameters.
         
@@ -55,7 +55,7 @@ class DenseNetModel(DeepLearningModel):
             - num_classes (int): The number of output classes.
             - **kwargs: Additional keyword arguments.
         """
-        self.growth_rate = kwargs["growth_rate"]
+        self.growth_rate = growth_rate
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def init_block(self, input):
