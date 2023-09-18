@@ -130,5 +130,5 @@ class DeepLearningModel(ABC):
             
         if "mixed_float16" in str(mixed_precision.global_policy()):
             model_name += "_fp16"
-        self.model.save(f"export model\\{model_name}.h5")
+        self.model.save(f"export model\\{model_name}.h5", include_optimizer=False)
 
