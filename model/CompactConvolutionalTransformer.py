@@ -57,6 +57,7 @@ class CompactConvolutionalTransformer(DeepLearningModel):
             mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
             position_embedding (bool): A flag indicating whether to include position embeddings.
         """
+
         assert latent_size % num_head == 0, f"Latent size ({latent_size}) is not divisible by number of attention heads ({num_head})"
 
         self.conv_layer = conv_layer
@@ -97,6 +98,215 @@ class CompactConvolutionalTransformer(DeepLearningModel):
         x = Flatten()(SeqPool)
         output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
 
-        model_name = f"CCT_I{self.image_size}x{self.image_size}_Conv{self.conv_layer}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
+        conv_name = ""
+        for idx, layer in enumerate(self.conv_layer):
+            if idx == 0:
+                conv_name += str(layer)
+            else:
+                conv_name += f"_{layer}"
+
+        model_name = f"CCT_I{self.image_size}x{self.image_size}_Conv{conv_name}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model
+    
+
+class CCT2(CompactConvolutionalTransformer):
+    """
+    Custom Compact Convolutional Transformer (CCT) Variant CCT2.
+
+    This class defines a custom variant of the Compact Convolutional Transformer with specific hyperparameters.
+
+    Fixed Parameters:
+        num_head (int): The number of attention heads in the transformer (fixed to 2).
+        latent_size (int): The latent dimension size for patch embeddings (fixed to 128).
+        num_layer (int): The number of transformer encoder layers (fixed to 2).
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer (fixed to 128).
+        position_embedding (bool): A flag indicating whether to include position embeddings (fixed to False).
+
+    Args:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layer (list): A list of integers representing the number of features
+                           for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+    """
+    def __init__(self, image_size, conv_layer, num_classes):
+        super().__init__(
+            image_size=image_size,
+            conv_layer=conv_layer,
+            num_classes=num_classes,
+            num_head=2,
+            latent_size=128,
+            num_layer=2,
+            mlp_size=128,
+            position_embedding=False,
+        )
+
+class CCT4(CompactConvolutionalTransformer):
+    """
+    Custom Compact Convolutional Transformer (CCT) Variant CCT4.
+
+    This class defines a custom variant of the Compact Convolutional Transformer with specific hyperparameters.
+
+    Fixed Parameters:
+        num_head (int): The number of attention heads in the transformer (fixed to 2).
+        latent_size (int): The latent dimension size for patch embeddings (fixed to 128).
+        num_layer (int): The number of transformer encoder layers (fixed to 4).
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer (fixed to 128).
+        position_embedding (bool): A flag indicating whether to include position embeddings (fixed to False).
+
+    Args:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layer (list): A list of integers representing the number of features
+                           for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+    """
+    def __init__(self, image_size, conv_layer, num_classes):
+        super().__init__(
+            image_size=image_size,
+            conv_layer=conv_layer,
+            num_classes=num_classes,
+            num_head=2,
+            latent_size=128,
+            num_layer=4,
+            mlp_size=128,
+            position_embedding=False,
+        )
+
+class CCT6(CompactConvolutionalTransformer):
+    """
+    Custom Compact Convolutional Transformer (CCT) Variant CCT6.
+
+    This class defines a custom variant of the Compact Convolutional Transformer with specific hyperparameters.
+
+    Fixed Parameters:
+        num_head (int): The number of attention heads in the transformer (fixed to 4).
+        latent_size (int): The latent dimension size for patch embeddings (fixed to 256).
+        num_layer (int): The number of transformer encoder layers (fixed to 6).
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer (fixed to 512).
+        position_embedding (bool): A flag indicating whether to include position embeddings (fixed to False).
+
+    Args:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layer (list): A list of integers representing the number of features
+                           for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+    """
+    def __init__(self, image_size, conv_layer, num_classes):
+        super().__init__(
+            image_size=image_size,
+            conv_layer=conv_layer,
+            num_classes=num_classes,
+            num_head=4,
+            latent_size=256,
+            num_layer=6,
+            mlp_size=512,
+            position_embedding=False,
+        )
+
+class CCT7(CompactConvolutionalTransformer):
+    """
+    Custom Compact Convolutional Transformer (CCT) Variant CCT7.
+
+    This class defines a custom variant of the Compact Convolutional Transformer with specific hyperparameters.
+
+    Fixed Parameters:
+        num_head (int): The number of attention heads in the transformer (fixed to 4).
+        latent_size (int): The latent dimension size for patch embeddings (fixed to 256).
+        num_layer (int): The number of transformer encoder layers (fixed to 7).
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer (fixed to 512).
+        position_embedding (bool): A flag indicating whether to include position embeddings (fixed to False).
+
+    Args:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layer (list): A list of integers representing the number of features
+                           for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+    """
+    def __init__(self, image_size, conv_layer, num_classes):
+        super().__init__(
+            image_size=image_size,
+            conv_layer=conv_layer,
+            num_classes=num_classes,
+            num_head=4,
+            latent_size=256,
+            num_layer=7,
+            mlp_size=512,
+            position_embedding=False,
+        )
+
+class CCT14(CompactConvolutionalTransformer):
+    """
+    Custom Compact Convolutional Transformer (CCT) Variant CCT14.
+
+    This class defines a custom variant of the Compact Convolutional Transformer with specific hyperparameters.
+
+    Fixed Parameters:
+        num_head (int): The number of attention heads in the transformer (fixed to 6).
+        latent_size (int): The latent dimension size for patch embeddings (fixed to 384).
+        num_layer (int): The number of transformer encoder layers (fixed to 14).
+        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer (fixed to 1152).
+        position_embedding (bool): A flag indicating whether to include position embeddings (fixed to False).
+
+    Args:
+        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
+        conv_layer (list): A list of integers representing the number of features
+                           for each convolutional layer.
+        num_classes (int): The number of output classes for classification.
+    """
+    def __init__(self, image_size, conv_layer, num_classes):
+        super().__init__(
+            image_size=image_size,
+            conv_layer=conv_layer,
+            num_classes=num_classes,
+            num_head=6,
+            latent_size=384,
+            num_layer=14,
+            mlp_size=1152,
+            position_embedding=False,
+        )
+
+
+class ImportCCTModel(DeepLearningModel):
+    """
+    ImportCCTModel is a class for importing pre-trained Compact Convolutional Transformer (CCT) models from an H5 file.
+
+    Args:
+        h5file (str): The file path of the pre-trained CCT model in ".h5" format.
+
+    """
+    def __init__(self, h5file):
+        """
+        Initialize the ImportCCTModel instance.
+
+        Args:
+            h5file (str): The file path of the pre-trained CCT model in ".h5" format.
+            
+        Raises:
+            ValueError: If the provided file path does not have a ".h5" extension.
+        """
+        if not h5file.endswith(".h5"):
+            raise ValueError("Invalid: The h5file must have a .h5 extension.")
+        
+        self.h5file = h5file
+        super().__init__(image_size=None, num_classes=None)
+
+    def build_model(self):
+        """
+        Build and return the imported CCT model.
+
+        Returns:
+            model (tf.keras.Model): The pre-trained CCT model loaded from the provided ".h5" file.
+        """
+        object = {
+            'PatchEncoder': PatchEncoder,
+            'ConvToken': ConvToken,
+            'TransformerEncoder': TransformerEncoder,
+        }
+
+        model = tf.keras.models.load_model(self.h5file, custom_objects=object)
+
+        # Override image_size and num_classes
+        self.image_size = model.layers[0].input_shape[0][1]
+        self.num_classes = model.layers[-1].output_shape[-1]
+        
+        return model 
