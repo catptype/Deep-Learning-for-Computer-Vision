@@ -40,7 +40,28 @@ class ImportModel(DeepLearningModel):
         Returns:
             tf.keras.Model: The pre-trained model loaded from the H5 file.
         """
-        model = tf.keras.models.load_model(self.h5file)
+        try:
+            print("Loading model ...")
+            model = tf.keras.models.load_model(self.h5file)
+            print("Model loaded successfully. No custom Keras layers detected.")
+        except ValueError:
+            print("Error: Custom Keras layers detected.\nLoading model with custom objects ...", end="")
+            from .transformer_module.ClassToken import ClassToken
+            from .transformer_module.ConvToken import ConvToken
+            from .transformer_module.ImagePatcher import ImagePatcher
+            from .transformer_module.PatchEncoder import PatchEncoder
+            from .transformer_module.TransformerEncoder import TransformerEncoder
+            
+            custom_objects = {
+                'ImagePatcher': ImagePatcher,
+                'PatchEncoder': PatchEncoder,
+                'ClassToken': ClassToken,
+                'ConvToken': ConvToken,
+                'TransformerEncoder': TransformerEncoder,
+            }
+
+            model = tf.keras.models.load_model(self.h5file, custom_objects=custom_objects)
+            print("Complete")
 
         # Override image_size and num_classes
         self.image_size = model.layers[0].input_shape[0][1]
