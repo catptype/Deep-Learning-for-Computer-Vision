@@ -5,6 +5,7 @@ sys.dont_write_bytecode = True
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from model.ImportModel import ImportModel
 from sklearn.metrics import confusion_matrix, classification_report
 
 # Avoid out of memory errors by setting GPU Memory Consumption Growth
@@ -15,10 +16,6 @@ for gpu in gpus:
 # Suppress log below than ERROR
 # such INFO:tensorflow:Mixed precision compatibility check (mixed_float16): OK
 tf.get_logger().setLevel('ERROR')
-
-from model.ImportModel import ImportModel
-from sklearn.metrics import confusion_matrix, classification_report
-import matplotlib.pyplot as plt
 
 class ImageClassificationReporter():
     """
@@ -94,6 +91,10 @@ class ImageClassificationReporter():
             progress_bar.add(1)
 
         prediction_result = [self.__label_list[idx] for idx in prediction_result]
+
+        # Release memory after finish prediction
+        tf.keras.backend.clear_session()
+
         return prediction_result
 
     def __generate_confusion_matrix(self):
