@@ -58,6 +58,19 @@ class GranCAM():
         print("Complete")
         return model
     
+    def __get_epsilon(self):
+        """
+        Calculates the machine epsilon, which is the smallest positive number that can be added to 1.0
+        and still yield a result different from 1.0. Used for numerical stability.
+
+        Returns:
+            float: The machine epsilon.
+        """
+        epsilon = 1
+        while 1 + epsilon != 1:
+            epsilon /= 2.        
+        return epsilon 
+    
     def generate_heatmap(self, image, class_index=None, overlay=False):
         """
         Generates the Gradient-weighted Class Activation Map (Grad-CAM) for a given image.
@@ -89,10 +102,11 @@ class GranCAM():
         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
         
         # Generate heatmap
+        epsilon = self.__get_epsilon()
         conv_outputs = conv_outputs[0]
         
         heatmap = tf.reduce_mean(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-        heatmap = np.maximum(heatmap, 0)
+        heatmap = np.maximum(heatmap, 0 + epsilon)
         heatmap /= np.max(heatmap)
 
         heatmap = cv2.resize(heatmap, (width, height))
