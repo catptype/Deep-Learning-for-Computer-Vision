@@ -10,7 +10,7 @@ class YOLOv3Visualizer:
         self.class_mapping = class_mapping
     
     # Private methods
-    def __draw_grid(self, image, x_grid_size, y_grid_size):
+    def __draw_grid(self, image, row_grid_size, col_grid_size):
         # Extract variables
         image_height, image_width = image.shape[:2]
 
@@ -18,38 +18,38 @@ class YOLOv3Visualizer:
         grid_color = (0, 0, 255)  # blue for grid lines
         grid_thickness = 1
 
-        cell_width = image_width // x_grid_size
-        cell_height = image_height // y_grid_size
+        cell_width = image_width // col_grid_size
+        cell_height = image_height // row_grid_size
 
         # Draw vertical grid lines
-        for i in range(x_grid_size):
+        for i in range(col_grid_size):
             x = i * cell_width
             cv2.line(image, (x, 0), (x, image.shape[0]), grid_color, grid_thickness)
 
         # Draw horizontal grid lines
-        for i in range(y_grid_size):
+        for i in range(row_grid_size):
             y = i * cell_height
             cv2.line(image, (0, y), (image.shape[1], y), grid_color, grid_thickness)
 
     def __draw_highlight(self, image, x_center, y_center, grid_info):
         # Extract variables
         image_height, image_width = image.shape[:2]
-        row, col, x_grid_size, y_grid_size = grid_info
+        row, col, row_grid_size, col_grid_size = grid_info
 
         # Boundary box setup
         grid_color = (255, 0, 0)  # Red for grid lines
         grid_thickness = 1
 
         # Convert grid cell coordinates to image coordinates
-        x_center_image = (row + x_center) * image_width / x_grid_size
-        y_center_image = (col + y_center) * image_height / y_grid_size
-        cell_width = image_width // x_grid_size
-        cell_height = image_height // y_grid_size
+        x_center_image = (col + x_center) * image_width / col_grid_size
+        y_center_image = (row + y_center) * image_height / row_grid_size
+        cell_width = image_width // col_grid_size
+        cell_height = image_height // row_grid_size
         
-        x_min = row * cell_width
-        y_min = col * cell_height
-        x_max = (row + 1) * cell_width
-        y_max = (col + 1) * cell_height
+        x_min = col * cell_width
+        y_min = row * cell_height
+        x_max = (col + 1) * cell_width
+        y_max = (row + 1) * cell_height
         
         cv2.rectangle(image, (x_min, y_min), (x_max, y_max), grid_color, grid_thickness)
 
@@ -65,15 +65,15 @@ class YOLOv3Visualizer:
         # Extract variables
         image_height, image_width = image.shape[:2]
         x_center, y_center, width, height, class_name, objectness = bounding_box
-        row, col, x_grid_size, y_grid_size = grid_info
+        row, col, row_grid_size, col_grid_size = grid_info
 
         # Boundary box setup
         color = (0, 255, 0)  # Green for the bounding box color
         thickness = 2
 
         # Convert grid cell coordinates to image coordinates
-        x_center_image = (row + x_center) * image_width / x_grid_size
-        y_center_image = (col + y_center) * image_height / y_grid_size
+        x_center_image = (col + x_center) * image_width / col_grid_size
+        y_center_image = (row + y_center) * image_height / row_grid_size
         width_image = width * image_width
         height_image = height * image_height
 
@@ -96,39 +96,44 @@ class YOLOv3Visualizer:
             num_scales = len(labels)
 
             for batch_idx in range(batch_size):
-                image = (images[batch_idx] * 255).numpy().astype("uint8")
+                image = images[batch_idx]
+                image = np.clip(image, 0, 1)
+                image = (image * 255).astype("uint8")
 
                 for scale_idx, scale_labels in enumerate(labels):
                     plt.subplot(batch_size, num_scales, (batch_idx * num_scales) + (scale_idx + 1))
                     image_with_boxes = image.copy()
 
-                    x_grid_size = scale_labels.shape[1]
-                    y_grid_size = scale_labels.shape[2]
+                    row_grid_size = scale_labels.shape[1]
+                    col_grid_size = scale_labels.shape[2]
                     num_anchors = scale_labels.shape[3]
 
-                    for row in range(x_grid_size):
-                        for col in range(y_grid_size):
+                    title = ""
+                    for row_grid_idx in range(row_grid_size):
+                        for col_grid_idx in range(col_grid_size):
                             for anchor_idx in range(num_anchors):
-                                objectness = scale_labels[batch_idx, row, col, anchor_idx, 0]
+                                objectness = scale_labels[batch_idx, row_grid_idx, col_grid_idx, anchor_idx, 0]
 
                                 if objectness > 0:
-                                    x_center, y_center, width, height = scale_labels[batch_idx, row, col, anchor_idx, 1:5]
-                                    class_probs = scale_labels[batch_idx, row, col, anchor_idx, 5:]
+                                    x_center, y_center, width, height = scale_labels[batch_idx, row_grid_idx, col_grid_idx, anchor_idx, 1:5]
+                                    class_probs = scale_labels[batch_idx, row_grid_idx, col_grid_idx, anchor_idx, 5:]
 
                                     class_id = np.argmax(class_probs)
                                     class_name = self.class_mapping[class_id] if self.class_mapping else str(class_id)
 
                                     bounding_box = (x_center, y_center, width, height, class_name, objectness)
-                                    grid_info = (row, col, x_grid_size, y_grid_size)
+                                    grid_info = (row_grid_idx, col_grid_idx, row_grid_size, col_grid_size)
 
                                     self.__draw_bounding_box(image_with_boxes, bounding_box, grid_info)
                                     if show_grid:
-                                        self.__draw_grid(image_with_boxes, x_grid_size, y_grid_size)
+                                        self.__draw_grid(image_with_boxes, row_grid_size, col_grid_size)
                                     if show_highlight:
                                         self.__draw_highlight(image_with_boxes, x_center, y_center, grid_info)
 
-                    plt.imshow(image_with_boxes)
-                    plt.title(f"s_{scale_idx}: g:{row+1}x{col+1} | c:({x_center:.2f}, {y_center:.2f})")
+                                    title += f"s_{scale_idx}: g:{row_grid_idx+1}x{col_grid_idx+1} | c:({x_center:.2f}, {y_center:.2f})\n"
+
+                    plt.imshow(image_with_boxes)                    
+                    plt.title(title)
                     plt.axis("off")
 
         plt.show()

@@ -26,7 +26,10 @@ class YOLOv3Augmentation:
                 new_annotation = (class_idx, xmin, ymin, xmax, ymax)
                 updated_annotation_list.append(new_annotation)
 
-        return tf.convert_to_tensor(image), tf.convert_to_tensor(updated_annotation_list)
+        image = tf.convert_to_tensor(image)
+        updated_annotation_list = tf.convert_to_tensor(updated_annotation_list)
+        
+        return image, updated_annotation_list
 
     @tf.autograph.experimental.do_not_convert
     def horizontal_flip(self, image, annotation_list):
@@ -91,7 +94,10 @@ class YOLOv3Augmentation:
                 new_annotation = (class_idx, xmin, ymin, xmax, ymax)
                 updated_annotation_list.append(new_annotation)
 
-        return tf.convert_to_tensor(image), tf.convert_to_tensor(updated_annotation_list)
+        image = tf.convert_to_tensor(image)
+        updated_annotation_list = tf.convert_to_tensor(updated_annotation_list)
+
+        return image, updated_annotation_list
 
     @tf.autograph.experimental.do_not_convert
     def rotation_complex(self, image, annotation_list): # more computation and more accurate when high rotation
@@ -140,7 +146,10 @@ class YOLOv3Augmentation:
                 new_annotation = (class_idx, rotated_xmin, rotated_ymin, rotated_xmax, rotated_ymax)
                 updated_annotation_list.append(new_annotation)
 
-        return tf.convert_to_tensor(image), tf.convert_to_tensor(updated_annotation_list)
+        image = tf.convert_to_tensor(image)
+        updated_annotation_list = tf.convert_to_tensor(updated_annotation_list)
+        
+        return image, updated_annotation_list
 
     @tf.autograph.experimental.do_not_convert
     def rotation(self, image, annotation_list): # not accurate when high rotation
@@ -191,7 +200,10 @@ class YOLOv3Augmentation:
                 new_annotation = (class_idx, rotated_xmin, rotated_ymin, rotated_xmax, rotated_ymax)
                 updated_annotation_list.append(new_annotation)
 
-        return tf.convert_to_tensor(image), tf.convert_to_tensor(updated_annotation_list)
+        image = tf.convert_to_tensor(image)
+        updated_annotation_list = tf.convert_to_tensor(updated_annotation_list)
+        
+        return image, updated_annotation_list
 
     @tf.autograph.experimental.do_not_convert
     def padding(self, image, annotation_list):
@@ -227,5 +239,8 @@ class YOLOv3Augmentation:
                 # Create a new annotation tuple
                 new_annotation = (class_idx, xmin, ymin, xmax, ymax)
                 updated_annotation_list.append(new_annotation)
-
-        return tf.convert_to_tensor(image), tf.convert_to_tensor(updated_annotation_list)
+        
+        image = tf.convert_to_tensor(image)
+        updated_annotation_list = tf.convert_to_tensor(updated_annotation_list)
+        
+        return image, updated_annotation_list

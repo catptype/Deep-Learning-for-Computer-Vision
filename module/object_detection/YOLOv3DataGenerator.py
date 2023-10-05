@@ -80,7 +80,12 @@ class YOLOv3DataGenerator:
         # Convert pixel values from int to float by dividing by 255.0
         image = image / 255.0
         image = image.astype("float32")
-        return tf.convert_to_tensor(image)
+        
+        image = tf.convert_to_tensor(image)
+        image_width, image_height = self.__image_size
+        image = tf.ensure_shape(image, (image_height, image_width, 3))
+
+        return image
     
     def __image_reader_tf(self, image_path):
         image = tf.io.read_file(image_path)
@@ -91,6 +96,10 @@ class YOLOv3DataGenerator:
                                 method="bicubic",
                                 antialias=True)
         image = image / 255.0
+        
+        image_size = min(self.__image_size) # output image always in square because aspect_ratio=True
+        image = tf.ensure_shape(image, (image_size, image_size, None))
+
         return image
     
     def __xml_reader(self, xml_path):
@@ -112,7 +121,9 @@ class YOLOv3DataGenerator:
             annotation = (class_idx, xmin, ymin, xmax, ymax)
             annotation_list.append(annotation)
         
-        return tf.convert_to_tensor(annotation_list)
+        annotation_list = tf.convert_to_tensor(annotation_list)
+        annotation_list = tf.ensure_shape(annotation_list, (None, annotation_list.shape[-1]))
+        return annotation_list
     
     def __generate_annotation_label(self, annotation_list):
 
@@ -120,11 +131,12 @@ class YOLOv3DataGenerator:
 
         for downsampling_scale in [32, 16, 8]: # YOLOv3 always produce 3 scales prediction
             # Calculate grid size for the current scale
-            x_grid_size = self.__image_size[0] // downsampling_scale
-            y_grid_size = self.__image_size[1] // downsampling_scale
+            
+            col_grid_size = self.__image_size[0] // downsampling_scale #32 width
+            row_grid_size = self.__image_size[1] // downsampling_scale #64 height
 
             # Initialize label data for the current scale
-            label_data_shape = (x_grid_size, y_grid_size, self.__num_anchor, 5 + len(self.__annotation_dict))
+            label_data_shape = (row_grid_size, col_grid_size, self.__num_anchor, 5 + len(self.__annotation_dict))
             scale_label_data = np.zeros(label_data_shape, dtype=np.float32)
             
             for annotation in annotation_list:
@@ -140,15 +152,16 @@ class YOLOv3DataGenerator:
                     best_anchor = anchor_module.find_best_anchor(width, height, self.__anchor_boxes)
 
                     # Convert box coordinates and size to grid cell coordinates
-                    x_grid_pos, y_grid_pos = int(x_center * x_grid_size), int(y_center * y_grid_size)
+                    col_grid_idx = int(x_center * col_grid_size) 
+                    row_grid_idx = int(y_center * row_grid_size)
 
                     # Encode object information into the label_data tensor for the current scale
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 0] = 1.  # Objectness score
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 1] = (x_center * x_grid_size) % 1
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 2] = (y_center * y_grid_size) % 1
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 3] = width
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 4] = height
-                    scale_label_data[x_grid_pos, y_grid_pos, best_anchor, 5 + int(class_id)] = 1.  # Class one-hot encoding
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 0] = 1.  # Objectness score
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 1] = (x_center * col_grid_size) % 1
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 2] = (y_center * row_grid_size) % 1
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 3] = width
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 4] = height
+                    scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 5 + int(class_id)] = 1.  # Class one-hot encoding
             
                 label_data.append(scale_label_data)
 
@@ -161,6 +174,7 @@ class YOLOv3DataGenerator:
         print("READ IMAGE ... ", end="")
         image = self.__image_reader_tf(image_path)
         print("COMPLETE")
+        
         print("READ XML ... ", end="")
         annotation_list = tf.numpy_function(
             func=self.__xml_reader,
@@ -212,7 +226,12 @@ class YOLOv3DataGenerator:
         )
         print("COMPLETE")
 
-        return tf.convert_to_tensor(image), (small, medium, large)
+        image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], None))
+        small = tf.ensure_shape(small, (self.__image_size[1] // 32, self.__image_size[0] // 32, self.__num_anchor, 5 + len(self.__annotation_dict)))
+        medium = tf.ensure_shape(medium, (self.__image_size[1] // 16, self.__image_size[0] // 16, self.__num_anchor, 5 + len(self.__annotation_dict)))
+        large = tf.ensure_shape(large, (self.__image_size[1] // 8, self.__image_size[0] // 8, self.__num_anchor, 5 + len(self.__annotation_dict)))
+
+        return image, (small, medium, large)
 
     # Public methods
     def generate_dataset(self, batch_size, drop_reminder=False):

@@ -1,6 +1,7 @@
 import sys
 sys.dont_write_bytecode = True
 
+import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
     BatchNormalization,
@@ -8,13 +9,15 @@ from tensorflow.keras.layers import (
     Conv2D,
     Input,
     LeakyReLU,
+    Reshape,
     UpSampling2D,
 )
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
 class YOLOv3(DeepLearningModel):
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_anchor, num_classes):
+        self.num_anchor = num_anchor
         super().__init__(image_size=image_size, num_classes=num_classes)
 
     def conv2D_block(self, input, num_feature, kernel=3, strides=1, upsampling=False):
@@ -42,12 +45,22 @@ class YOLOv3(DeepLearningModel):
     def scale_prediction(self, input, num_feature, name=None):
         output_feature = (self.num_classes + 5) * 3
         x = self.conv2D_block(input, num_feature)
-        x = Conv2D(output_feature, (1,1), name=name)(x)
+        x = Conv2D(output_feature, (1,1), activation="linear")(x)
+        x = tf.reshape(x, (-1, x.shape[1], x.shape[2], self.num_anchor, 5+self.num_classes), name=name)
         return x
     
     def build_model(self):
         # Input layer
-        input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
+        if isinstance(self.image_size, tuple) and len(self.image_size) == 2:
+            input = Input(shape=(self.image_size[1], self.image_size[0], 3), name="Input_image")
+            model_name = f"YOLOv3_{self.image_size[0]}x{self.image_size[1]}_a{self.num_anchor}_{self.num_classes}Class"
+        
+        elif isinstance(self.image_size, int):
+            input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
+            model_name = f"YOLOv3_{self.image_size}x{self.image_size}_a{self.num_anchor}_{self.num_classes}Class"
+        
+        else:
+            raise ValueError("Invalid image_size. It should be a tuple (width, height) or integer.")
 
         # Darknet 53
         # Stage 0
@@ -94,7 +107,5 @@ class YOLOv3(DeepLearningModel):
         yolo_L = self.scale_prediction(x, 256, name="output_large")
         
         # Output
-        model_name = f"YOLOv3_{self.image_size}x{self.image_size}_{self.num_classes}Class"
-
         model = Model(inputs=[input], outputs=[yolo_S, yolo_M, yolo_L], name=model_name)
         return model
