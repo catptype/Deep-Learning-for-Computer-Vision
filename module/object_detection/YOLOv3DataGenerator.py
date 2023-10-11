@@ -96,10 +96,6 @@ class YOLOv3DataGenerator:
                                 method="bicubic",
                                 antialias=True)
         image = image / 255.0
-        
-        image_size = min(self.__image_size) # output image always in square because aspect_ratio=True
-        image = tf.ensure_shape(image, (image_size, image_size, None))
-
         return image
     
     def __xml_reader(self, xml_path):
@@ -226,7 +222,7 @@ class YOLOv3DataGenerator:
         )
         print("COMPLETE")
 
-        image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], None))
+        image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
         small = tf.ensure_shape(small, (self.__image_size[1] // 32, self.__image_size[0] // 32, self.__num_anchor, 5 + len(self.__annotation_dict)))
         medium = tf.ensure_shape(medium, (self.__image_size[1] // 16, self.__image_size[0] // 16, self.__num_anchor, 5 + len(self.__annotation_dict)))
         large = tf.ensure_shape(large, (self.__image_size[1] // 8, self.__image_size[0] // 8, self.__num_anchor, 5 + len(self.__annotation_dict)))
