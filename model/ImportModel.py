@@ -6,39 +6,36 @@ from .DeepLearningModel import DeepLearningModel
 
 class ImportModel(DeepLearningModel):
     """
-    Deep learning model class for importing pre-trained models from H5 files.
-
-    Args:
-        h5file (str): The path to the H5 file containing the pre-trained model.
+    A class for importing and loading pre-trained deep learning models from .h5 files.
 
     Attributes:
-        h5file (str): The path to the H5 file containing the pre-trained model.
+        h5file (str): The path to the .h5 file containing the pre-trained model.
 
     Methods:
-        build_model(): Load the pre-trained model from the H5 file and set image_size and num_classes.
+        __init__(self, h5file): Initialize the ImportModel instance with the path to the .h5 file.
+        build_model(self): Load and build the pre-trained model, handling custom Keras layers if present.
     """
     def __init__(self, h5file):
         """
-        Initialize the ImportModel instance.
+        Initialize an ImportModel instance.
 
-        Args:
-            h5file (str): The path to the H5 file containing the pre-trained model.
-
-        Raises:
-            ValueError: If h5file does not have a valid .h5 file extension.
+        Parameters:
+            h5file (str): The path to the .h5 file containing the pre-trained model.
         """
         if not h5file.endswith(".h5"):
             raise ValueError("Invalid: The h5file must have a .h5 extension.")
         
         self.h5file = h5file
-        super().__init__(image_size=None, num_classes=None)
+        super().__init__()
 
     def build_model(self):
         """
-        Load the pre-trained model from the H5 file and set image_size and num_classes.
+        Load and build the pre-trained model, handling custom Keras layers if present.
+
+        If the model contains custom Keras layers, this method loads the model with the necessary custom objects.
 
         Returns:
-            tf.keras.Model: The pre-trained model loaded from the H5 file.
+            tf.keras.Model: The loaded pre-trained model.
         """
         try:
             print("Loading model ...")
@@ -62,9 +59,5 @@ class ImportModel(DeepLearningModel):
 
             model = tf.keras.models.load_model(self.h5file, custom_objects=custom_objects)
             print("Complete")
-
-        # Override image_size and num_classes
-        self.image_size = model.layers[0].input_shape[0][1]
-        self.num_classes = model.layers[-1].output_shape[-1]
         
-        return model       
+        return model

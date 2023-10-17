@@ -16,11 +16,59 @@ from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
 
 class YOLOv3(DeepLearningModel):
-    def __init__(self, image_size, num_anchor, num_classes):
+    """
+    YOLOv3: You Only Look Once Version 3.
+
+    This class defines the YOLOv3 deep learning model for object detection.
+
+    Parameters:
+        image_size (int or tuple): The input image size as an integer for square images
+            or a tuple (width, height) for non-square images.
+        num_anchor (int): The number of anchor boxes used for object detection.
+        num_class (int): The number of output classes for object detection.
+
+    Methods:
+        conv2D_block(input, num_feature, kernel=3, strides=1, upsampling=False):
+            Create a 2D convolutional block with optional upsampling.
+        res_unit(input, num_feature):
+            Create a residual unit.
+        conv2D_unit(input, num_feature):
+            Create a convolutional unit.
+        scale_prediction(input, num_feature, name=None):
+            Create the prediction tensor for object detection.
+        build_model():
+            Build the YOLOv3 model architecture.
+
+    """
+    def __init__(self, image_size, num_anchor, num_class):
+        """
+        Initialize the YOLOv3 model with the specified parameters.
+
+        Parameters:
+            image_size (int or tuple): The input image size as an integer for square images
+                or a tuple (width, height) for non-square images.
+            num_anchor (int): The number of anchor boxes used for object detection.
+            num_class (int): The number of output classes for object detection.
+        """
+        self.image_size = image_size
+        self.num_class = num_class
         self.num_anchor = num_anchor
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__()
 
     def conv2D_block(self, input, num_feature, kernel=3, strides=1, upsampling=False):
+        """
+        Create a 2D convolutional block with optional upsampling.
+
+        Parameters:
+            input: Input tensor for the convolutional block.
+            num_feature (int): The number of output feature maps.
+            kernel (int, optional): The kernel size for convolution. Default is 3.
+            strides (int, optional): The stride for convolution. Default is 1.
+            upsampling (bool, optional): Whether to apply upsampling. Default is False.
+
+        Returns:
+            TensorFlow tensor representing the output of the convolutional block.
+        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         x = LeakyReLU(0.1)(x)
@@ -29,12 +77,32 @@ class YOLOv3(DeepLearningModel):
         return x
 
     def res_unit(self, input, num_feature):
+        """
+        Create a residual unit.
+
+        Parameters:
+            input: Input tensor for the residual unit.
+            num_feature (int): The number of output feature maps.
+
+        Returns:
+            TensorFlow tensor representing the output of the residual unit.
+        """
         x = self.conv2D_block(input, num_feature // 2, kernel=1)
         x = self.conv2D_block(x, num_feature, kernel=3)
         x = Add()([input, x])
         return x
     
     def conv2D_unit(self, input, num_feature):
+        """
+        Create a convolutional unit.
+
+        Parameters:
+            input: Input tensor for the convolutional unit.
+            num_feature (int): The number of output feature maps.
+
+        Returns:
+            TensorFlow tensor representing the output of the convolutional unit.
+        """
         x = self.conv2D_block(input, num_feature // 2, kernel=1)
         x = self.conv2D_block(x, num_feature)
         x = self.conv2D_block(x, num_feature // 2, kernel=1)
@@ -43,21 +111,32 @@ class YOLOv3(DeepLearningModel):
         return x
     
     def scale_prediction(self, input, num_feature, name=None):
-        output_feature = (self.num_classes + 5) * 3
+        """
+        Scale the prediction tensor for object detection.
+
+        Parameters:
+            input: Input tensor to be scaled.
+            num_feature (int): The number of output feature maps.
+            name (str, optional): The name for the output layer.
+
+        Returns:
+            TensorFlow tensor representing the scaled prediction.
+        """
+        output_feature = (self.num_class + 5) * 3
         x = self.conv2D_block(input, num_feature)
         x = Conv2D(output_feature, (1,1), activation="linear")(x)
-        x = tf.reshape(x, (-1, x.shape[1], x.shape[2], self.num_anchor, 5+self.num_classes), name=name)
+        x = Reshape((x.shape[1], x.shape[2], self.num_anchor, 5+self.num_class), name=name, dtype=tf.float32)(x)
         return x
     
     def build_model(self):
         # Input layer
         if isinstance(self.image_size, tuple) and len(self.image_size) == 2:
             input = Input(shape=(self.image_size[1], self.image_size[0], 3), name="Input_image")
-            model_name = f"YOLOv3_{self.image_size[0]}x{self.image_size[1]}_a{self.num_anchor}_{self.num_classes}Class"
+            model_name = f"YOLOv3_{self.image_size[0]}x{self.image_size[1]}_a{self.num_anchor}_{self.num_class}Class"
         
         elif isinstance(self.image_size, int):
             input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
-            model_name = f"YOLOv3_{self.image_size}x{self.image_size}_a{self.num_anchor}_{self.num_classes}Class"
+            model_name = f"YOLOv3_{self.image_size}x{self.image_size}_a{self.num_anchor}_{self.num_class}Class"
         
         else:
             raise ValueError("Invalid image_size. It should be a tuple (width, height) or integer.")

@@ -1,17 +1,3 @@
-"""
-Res2Net Models
-~~~~~~~~~~~~~
-
-This module defines a set of Res2Net architectures for image classification tasks using TensorFlow and Keras.
-
-Classes:
-    - Res2NetModel: Base class for Res2Net architectures.
-    - Res2Net50: Implementation of Res2Net-50 architecture.
-    - Res2Net101: Implementation of Res2Net-101 architecture.
-    - Res2Net152: Implementation of Res2Net-152 architecture.
-
-Note: To use these models, TensorFlow and Keras must be installed.
-"""
 import sys
 sys.dont_write_bytecode = True
 
@@ -37,27 +23,45 @@ class Res2NetModel(DeepLearningModel):
     """
     Base class for Res2Net architectures.
 
-    Methods:
-        - Conv2D_block(input, num_feature, kernel, strides, use_skip, identity): Defines a convolutional block with optional skip connection.
-        - Residual_bottleneck(input, num_feature): Defines a residual bottleneck block for the Res2Net architecture.
-    """
-    def __init__(self, image_size, num_classes, scale, module):
-        """
-        Initializes the ResNet model with specified parameters.
-        
-        Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-            - scale (int): The scale factor for the model.
-            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
-        """
+    This class serves as the base for implementing various Res2Net architectures.
 
-        assert module is None or module == 'se' or module == 'cbam', f"module value must be 1:None, 2:'se', 3:'cbam', current ({module})"
+    Parameters:
+        image_size (int): The input image size.
+        num_class (int): The number of output classes for classification.
+        scale (int): The scale factor used to divide and merge feature maps within the Res2Net block.
+        module (str): The attention module to enhance the Res2Net architecture. Options include 'se' (Squeeze-and-Excitation) or 'cbam' (Convolutional Block Attention Module).
+
+    Methods:
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
+            Apply a convolutional block with optional skip connection.
+        Residual_bottleneck(input, num_feature):
+            Create a Res2Net residual bottleneck block with the specified number of feature maps.
+    """
+    def __init__(self, image_size, num_class, scale, module):
+        if module is not None and module not in ['se', 'cbam']:
+            raise ValueError(f"module value must be one of: 'None', 'se', 'cbam'")
+    
+        self.image_size = image_size
+        self.num_class = num_class
         self.scale = scale
         self.module = module
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
+        """
+        Apply a convolutional block with optional skip connection.
+
+        Parameters:
+            input: Input tensor for the convolutional block.
+            num_feature (int): The number of output feature maps.
+            kernel (int, optional): The kernel size for convolution. Default is 3.
+            strides (int, optional): The convolutional stride. Default is 1.
+            use_skip (bool, optional): Whether to use a skip connection. Default is False.
+            identity: The identity tensor for the skip connection.
+
+        Returns:
+            TensorFlow tensor representing the output of the convolutional block.
+        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         if use_skip:
@@ -68,6 +72,16 @@ class Res2NetModel(DeepLearningModel):
         return x
     
     def Residual_bottleneck(self, input, num_feature):
+        """
+        Create a Res2Net residual bottleneck block with the specified number of feature maps.
+
+        Parameters:
+            input: Input tensor for the Res2Net block.
+            num_feature (int): The number of output feature maps.
+
+        Returns:
+            TensorFlow tensor representing the output of the Res2Net residual bottleneck block.
+        """
         module_output = []
 
         x = self.Conv2D_block(input, num_feature)
@@ -108,25 +122,19 @@ class Res2Net50(Res2NetModel):
     """
     Implementation of Res2Net-50 architecture.
     """
-    def __init__(self, image_size, num_classes, scale=4, module=None):
+    def __init__(self, image_size, num_class, scale=4, module=None):
         """
         Initializes the Res2Net-50 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-            - scale (int): The scale factor for the model.
-            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
+            scale (int): The scale factor for the model.
+            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
-        super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
+        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
 
     def build_model(self):
-        """
-        Builds the Res2Net-50 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -152,14 +160,14 @@ class Res2Net50(Res2NetModel):
 
         # output
         x = GlobalAveragePooling2D()(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         if self.module is None:
-            model_name = f"Res2Net50_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net50_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'se':
-            model_name = f"Res2Net50SE_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net50SE_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'cbam':
-            model_name = f"Res2Net50CBAM_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net50CBAM_{self.image_size}x{self.image_size}_{self.num_class}Class"
 
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model
@@ -169,25 +177,19 @@ class Res2Net101(Res2NetModel):
     """
     Implementation of Res2Net-101 architecture.
     """
-    def __init__(self, image_size, num_classes, scale=4, module=None):
+    def __init__(self, image_size, num_class, scale=4, module=None):
         """
         Initializes the Res2Net-101 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-            - scale (int): The scale factor for the model.
-            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
+            scale (int): The scale factor for the model.
+            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
-        super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
+        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
 
     def build_model(self):
-        """
-        Builds the Res2Net-101 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -213,14 +215,14 @@ class Res2Net101(Res2NetModel):
 
         # output
         x = GlobalAveragePooling2D()(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         if self.module is None:
-            model_name = f"Res2Net101_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net101_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'se':
-            model_name = f"Res2Net101SE_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net101SE_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'cbam':
-            model_name = f"Res2Net101CBAM_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net101CBAM_{self.image_size}x{self.image_size}_{self.num_class}Class"
 
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model
@@ -230,25 +232,19 @@ class Res2Net152(Res2NetModel):
     """
     Implementation of Res2Net-152 architecture.
     """
-    def __init__(self, image_size, num_classes, scale=4, module=None):
+    def __init__(self, image_size, num_class, scale=4, module=None):
         """
         Initializes the Res2Net-152 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-            - scale (int): The scale factor for the model.
-            - module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
+            scale (int): The scale factor for the model.
+            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
         """
-        super().__init__(image_size=image_size, num_classes=num_classes, scale=scale, module=module)
+        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
 
     def build_model(self):
-        """
-        Builds the Res2Net-152 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -274,14 +270,14 @@ class Res2Net152(Res2NetModel):
 
         # output
         x = GlobalAveragePooling2D()(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         if self.module is None:
-            model_name = f"Res2Net152_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net152_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'se':
-            model_name = f"Res2Net152SE_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net152SE_{self.image_size}x{self.image_size}_{self.num_class}Class"
         elif self.module == 'cbam':
-            model_name = f"Res2Net152CBAM_{self.image_size}x{self.image_size}_{self.num_classes}Class"
+            model_name = f"Res2Net152CBAM_{self.image_size}x{self.image_size}_{self.num_class}Class"
 
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model

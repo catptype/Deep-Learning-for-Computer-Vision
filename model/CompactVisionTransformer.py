@@ -23,10 +23,10 @@ class CompactVisionTransformer(DeepLearningModel):
     Attributes:
         image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
         patch_size (int): The size of image patches.
-        num_classes (int): The number of output classes for classification.
+        num_class (int): The number of output classes for classification.
         num_head (int): The number of attention heads in the transformer.
         latent_size (int): The latent dimension size for patch embeddings.
-        num_layer (int): The number of transformer encoder layers.
+        num_transformer (int): The number of transformer encoder layers.
         mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
 
     """
@@ -34,10 +34,10 @@ class CompactVisionTransformer(DeepLearningModel):
         self,
         image_size,
         patch_size,
-        num_classes,
+        num_class,
         num_head,
         latent_size,
-        num_layer,
+        num_transformer,
         mlp_size,
     ):
         """
@@ -46,21 +46,26 @@ class CompactVisionTransformer(DeepLearningModel):
         Args:
             image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
             patch_size (int): The size of image patches.
-            num_classes (int): The number of output classes for classification.
+            num_class (int): The number of output classes for classification.
             num_head (int): The number of attention heads in the transformer.
             latent_size (int): The latent dimension size for patch embeddings.
-            num_layer (int): The number of transformer encoder layers.
+            num_transformer (int): The number of transformer encoder layers.
             mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
         """
-        assert image_size % patch_size == 0, f"Image size ({image_size}) is not divisible by Patch size ({patch_size})"
-        assert latent_size % num_head == 0, f"Latent size ({latent_size}) is not divisible by number of attention heads ({num_head})"
+        if image_size % patch_size != 0:
+            raise ValueError(f"Image size ({image_size}) is not divisible by the patch size ({patch_size})")
 
+        if latent_size % num_head != 0:
+            raise ValueError(f"Latent size ({latent_size}) is not divisible by the number of attention heads ({num_head})")
+
+        self.image_size = image_size
+        self.num_class = num_class
         self.patch_size = patch_size
         self.num_head = num_head
         self.latent_size = latent_size
-        self.num_layer = num_layer
+        self.num_transformer = num_transformer
         self.mlp_size = mlp_size
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__()
 
     def build_model(self):
         """
@@ -80,7 +85,7 @@ class CompactVisionTransformer(DeepLearningModel):
         x = PatchEncoder(num_patch=num_patch, latent_size=self.latent_size)(x)
 
         # Transformer encoder
-        for _ in range(self.num_layer):
+        for _ in range(self.num_transformer):
             x = TransformerEncoder(num_head=self.num_head, latent_size=self.latent_size, mlp_size=self.mlp_size)(x)
 
         # SeqPool
@@ -89,8 +94,8 @@ class CompactVisionTransformer(DeepLearningModel):
 
         # Classification
         x = Flatten()(SeqPool)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
-        model_name = f"CVT_I{self.image_size}x{self.image_size}_P{self.patch_size}_L{self.num_layer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_classes}Class"
+        model_name = f"CVT_I{self.image_size}x{self.image_size}_P{self.patch_size}_L{self.num_transformer}_H{self.num_head}_D{self.latent_size}_MLP{self.mlp_size}_{self.num_class}Class"
         model = Model(inputs=[input], outputs=output, name=model_name)
         return model

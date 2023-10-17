@@ -10,8 +10,6 @@ class DeepLearningModel(ABC):
     Abstract base class for deep learning models.
 
     Attributes:
-        image_size (int): The size of input images.
-        num_classes (int): The number of classes for classification.
         model (tf.keras.Model): The neural network model.
         history (tf.keras.callbacks.History): Training history.
 
@@ -24,16 +22,7 @@ class DeepLearningModel(ABC):
         predict(data): Make predictions on input data.
         save(name): Save the trained model to a file.
     """
-    def __init__(self, image_size, num_classes):
-        """
-        Initialize the DeepLearningModel instance.
-
-        Args:
-            image_size (tuple): The size of input images (height, width, channels).
-            num_classes (int): The number of classes for classification.
-        """
-        self.image_size = image_size
-        self.num_classes = num_classes
+    def __init__(self):
         self.model = self.build_model()
         self.history = None
 

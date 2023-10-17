@@ -1,19 +1,3 @@
-"""
-VGG Models
-~~~~~~~~~~
-
-This module defines a set of VGG architectures for image classification tasks using TensorFlow and Keras.
-
-Classes:
-    - VGGModel: Base class for VGG architectures.
-    - CustomVGG: Implementation of a custom VGG architecture.
-    - VGG11: Implementation of the VGG11 architecture.
-    - VGG13: Implementation of the VGG13 architecture.
-    - VGG16: Implementation of the VGG16 architecture.
-    - VGG19: Implementation of the VGG19 architecture.
-
-Note: TensorFlow and Keras must be installed to use these models.
-"""
 import sys
 sys.dont_write_bytecode = True
 
@@ -34,21 +18,36 @@ from .DeepLearningModel import DeepLearningModel
 class VGGModel(DeepLearningModel):
     """
     Base class for VGG architectures.
-    
+
+    This class serves as the base for implementing various VGG architectures.
+
+    Parameters:
+        image_size (int): The input image size.
+        num_class (int): The number of output classes for classification.
+
     Methods:
-        - Conv2D_block(input, num_feature, kernel, use_bn, downsampler): Creates a Convolutional Block.
+        Conv2D_block(input, num_feature, kernel=3, use_bn=False, downsampler=False):
+            Apply a VGG-style convolutional block with optional batch normalization and downsampling.
     """
-    def __init__(self, image_size, num_classes):
-        """
-        Initializes the VGG model with specified parameters.
-        
-        Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+    def __init__(self, image_size, num_class):
+        self.image_size = image_size
+        self.num_class = num_class
+        super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, use_bn=False, downsampler=False):
+        """
+        Create a VGG-style convolutional block with optional batch normalization and downsampling.
+
+        Parameters:
+            input: Input tensor for the convolutional block.
+            num_feature (int): The number of output feature maps.
+            kernel (int, optional): The kernel size for convolution. Default is 3.
+            use_bn (bool, optional): Whether to use batch normalization. Default is False.
+            downsampler (bool, optional): Whether to include downsampling layers. Default is False.
+
+        Returns:
+            TensorFlow tensor representing the output of the convolutional block.
+        """
         x = Conv2D(num_feature, (kernel, kernel), padding="same", kernel_initializer="he_normal")(input)
         if use_bn:
             x = BatchNormalization()(x)
@@ -62,23 +61,17 @@ class CustomVGG(VGGModel):
     """
     Implementation of a custom VGG architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the CustomVGG model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the CustomVGG model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -98,12 +91,12 @@ class CustomVGG(VGGModel):
         x = Flatten()(x)
         x = Dense(512, activation="relu")(x)
         x = Dense(512, activation="relu")(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"CustomVGG_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"CustomVGG_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
         return model
 
@@ -112,23 +105,17 @@ class VGG11(VGGModel):
     """
     Implementation of the VGG11 architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the VGG11 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the VGG11 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -154,12 +141,12 @@ class VGG11(VGGModel):
         x = Flatten()(x)
         x = Dense(4096, activation="relu")(x)
         x = Dense(4096, activation="relu")(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"VGG11_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"VGG11_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
         return model
 
@@ -168,23 +155,17 @@ class VGG13(VGGModel):
     """
     Implementation of the VGG13 architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the VGG13 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the VGG13 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -212,12 +193,12 @@ class VGG13(VGGModel):
         x = Flatten()(x)
         x = Dense(4096, activation="relu")(x)
         x = Dense(4096, activation="relu")(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"VGG13_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"VGG13_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
         return model
 
@@ -226,23 +207,17 @@ class VGG16(VGGModel):
     """
     Implementation of the VGG16 architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the VGG16 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the VGG13 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -273,12 +248,12 @@ class VGG16(VGGModel):
         x = Flatten()(x)
         x = Dense(4096, activation="relu")(x)
         x = Dense(4096, activation="relu")(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"VGG16_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"VGG16_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
         return model
 
@@ -287,23 +262,17 @@ class VGG19(VGGModel):
     """
     Implementation of the VGG19 architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the VGG19 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the VGG19 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -337,11 +306,11 @@ class VGG19(VGGModel):
         x = Flatten()(x)
         x = Dense(4096, activation="relu")(x)
         x = Dense(4096, activation="relu")(x)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(x)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(x)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"VGG19_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"VGG19_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
         return model

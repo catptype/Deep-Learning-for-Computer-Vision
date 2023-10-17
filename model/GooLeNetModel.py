@@ -1,19 +1,3 @@
-"""
-Inception v1 Models
-~~~~~~~~~~~~~~~~~~~
-
-This module defines a set of Inception v1 architectures for image classification tasks using TensorFlow and Keras.
-
-Classes:
-    - GooLeNetModel: Base class for Inception v1 architectures.
-    - Inception_v1: Implementation of the original Inception v1 architecture.
-    - Inception_v1_BN: Implementation of Inception v1 architecture with Batch Normalization.
-
-Note: To use these models, TensorFlow and Keras must be installed.
-
-Author: [Your Name]
-Date: [Date Created]
-"""
 import sys
 sys.dont_write_bytecode = True
 
@@ -36,24 +20,43 @@ from .DeepLearningModel import DeepLearningModel
 
 class GooLeNetModel(DeepLearningModel):
     """
-    Base class for Inception v1 architectures.
-    
+    Base class for GooLeNet or Inception v1 architectures.
+
+    This class serves as the base for implementing various Inception v1 architectures.
+
+    Parameters:
+        image_size (int): The size of the input image, e.g., 224 for a 224x224 image.
+        num_class (int): The number of output classes for classification.
+
     Methods:
-        - Conv2D_block(input, num_feature, kernel, strides, use_bn): Creates a Convolutional Block.
-        - init_block(input, use_bn): Creates the initial block of the architecture.
-        - inception_module(input, num_feature_list, use_bn, downsampler): Creates an Inception module.
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_bn=False):
+            Create a Conv2D block with options for batch normalization.
+
+        init_block(input, use_bn=False):
+            Create the initial block of the GoogLeNet model.
+
+        inception_module(input, num_feature_list, use_bn=False, downsampler=False):
+            Create an Inception module with optional batch normalization.
     """
-    def __init__(self, image_size, num_classes):
-        """
-        Initializes the Inception v1 model with specified parameters.
-        
-        Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+    def __init__(self, image_size, num_class):
+        self.image_size = image_size
+        self.num_class = num_class
+        super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_bn=False):
+        """
+        Create a Conv2D block with optional batch normalization.
+
+        Parameters:
+            input: Input tensor for the Conv2D block.
+            num_feature (int): The number of output features.
+            kernel (int): The kernel size for the convolution.
+            strides (int): The stride for the convolution.
+            use_bn (bool): Whether to apply batch normalization.
+
+        Returns:
+            TensorFlow tensor representing the output of the Conv2D block.
+        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         if use_bn:
             x = BatchNormalization()(x)
@@ -61,6 +64,16 @@ class GooLeNetModel(DeepLearningModel):
         return x
 
     def init_block(self, input, use_bn=False):
+        """
+        Create the initial block of the GoogLeNet model.
+
+        Parameters:
+            input: Input tensor for the initial block.
+            use_bn (bool): Whether to apply batch normalization.
+
+        Returns:
+            TensorFlow tensor representing the output of the initial block.
+        """
         x = self.Conv2D_block(input, 64, kernel=7, strides=2, use_bn=use_bn)
         x = MaxPooling2D((3, 3), strides=2, padding="same")(x)
 
@@ -70,7 +83,20 @@ class GooLeNetModel(DeepLearningModel):
         return x
 
     def inception_module(self, input, num_feature_list, use_bn=False, downsampler=False):
-        assert (len(num_feature_list) == 6), f"num feature must contain 6 numbers: len = {len(num_feature_list)}"
+        """
+        Create an Inception module with optional batch normalization.
+
+        Parameters:
+            input: Input tensor for the Inception module.
+            num_feature_list (list): A list of six integers specifying the number of features for each path.
+            use_bn (bool): Whether to apply batch normalization.
+            downsampler (bool): Whether the module acts as a downsampler.
+
+        Returns:
+            TensorFlow tensor representing the output of the Inception module.
+        """
+        if len(num_feature_list) != 6:
+            raise ValueError(f"num feature must contain 6 numbers: len = {len(num_feature_list)}")
 
         conv1x1 = self.Conv2D_block(input, num_feature_list[0], kernel=1, use_bn=use_bn)
 
@@ -84,8 +110,10 @@ class GooLeNetModel(DeepLearningModel):
         pool_proj = self.Conv2D_block(pool_proj, num_feature_list[5], kernel=1, use_bn=use_bn)
 
         output = Concatenate()([conv1x1, conv3x3, conv5x5, pool_proj])
+        
         if downsampler:
             output = MaxPooling2D((3, 3), strides=2, padding="same")(output)
+        
         return output
 
 
@@ -93,23 +121,17 @@ class Inception_v1(GooLeNetModel):
     """
     Implementation of the original Inception v1 architecture.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the Inception v1 model with specified parameters.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the Inception v1 model.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -135,12 +157,12 @@ class Inception_v1(GooLeNetModel):
         output = AveragePooling2D((7, 7), strides=1)(x)
         output = Flatten()(output)
         output = Dropout(0.4)(output)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(output)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(output)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"Inception_v1_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"Inception_v1_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
 
         return model
@@ -150,23 +172,17 @@ class Inception_v1_BN(GooLeNetModel):
     """
     Implementation of Inception v1 architecture with Batch Normalization.
     """
-    def __init__(self, image_size, num_classes):
+    def __init__(self, image_size, num_class):
         """
         Initializes the Inception v1 model with Batch Normalization.
         
         Args:
-            - image_size (int): The input image size.
-            - num_classes (int): The number of output classes.
+            image_size (int): The input image size.
+            num_class (int): The number of output classes.
         """
-        super().__init__(image_size=image_size, num_classes=num_classes)
+        super().__init__(image_size=image_size, num_class=num_class)
 
     def build_model(self):
-        """
-        Builds the Inception v1 model with Batch Normalization.
-        
-        Returns:
-            - model: The built Keras model.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
@@ -191,12 +207,12 @@ class Inception_v1_BN(GooLeNetModel):
         # Output
         output = AveragePooling2D((7, 7), strides=1)(x)
         output = Flatten()(output)
-        output = Dense(self.num_classes, activation="softmax", dtype=tf.float32)(output)
+        output = Dense(self.num_class, activation="softmax", dtype=tf.float32)(output)
 
         model = Model(
             inputs=[input],
             outputs=output,
-            name=f"Inception_v1_BN_{self.image_size}x{self.image_size}_{self.num_classes}Class",
+            name=f"Inception_v1_BN_{self.image_size}x{self.image_size}_{self.num_class}Class",
         )
 
         return model
