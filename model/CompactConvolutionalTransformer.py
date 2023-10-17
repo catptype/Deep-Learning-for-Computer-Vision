@@ -42,23 +42,11 @@ class CompactConvolutionalTransformer(DeepLearningModel):
         mlp_size,
         position_embedding=False,
     ):
-        """
-        Constructor method for initializing the CCT.
-
-        Args:
-            image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
-            conv_layer (list): A list of integers representing the number of features
-                               for each convolutional layer.
-            num_class (int): The number of output classes for classification.
-            num_head (int): The number of attention heads in the transformer.
-            latent_size (int): The latent dimension size for patch embeddings.
-            num_transformer (int): The number of transformer encoder layers.
-            mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
-            position_embedding (bool): A flag indicating whether to include position embeddings.
-        """
-
         if latent_size % num_head != 0:
             raise ValueError(f"Latent size ({latent_size}) is not divisible by the number of attention heads ({num_head})")
+
+        if latent_size != conv_layer[-1]:
+            raise ValueError(f"Latent size ({latent_size}) must equal to Convolutional Tokenizer channel ({conv_layer[-1]})")
 
         self.image_size = image_size
         self.num_class = num_class
@@ -71,18 +59,11 @@ class CompactConvolutionalTransformer(DeepLearningModel):
         super().__init__()
 
     def build_model(self):
-        """
-        Method for building the CCT architecture and returning the Keras model.
-
-        Returns:
-            model (Model): The Keras model representing the CCTModel.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
         # Convolution Token
         x = ConvToken(conv_layer=self.conv_layer)(input)
-        assert self.latent_size == x.shape[-1], f"Convolutional Tokenizer must has channel ({x.shape[-1]}) = embedding dimension ({self.latent_size})"
         
         # Patch encoder
         if self.position_embedding:
@@ -133,7 +114,7 @@ class CCT2(CompactConvolutionalTransformer):
         Initialize a CCT2 model for image classification:
 
         ```python
-        model = CCT2(image_size=224, conv_layer=[64, 128, 256], num_class=10)
+        model = CCT2(image_size=224, conv_layer=[32, 64, 128], num_class=10)
         ```
 
     """
@@ -171,7 +152,7 @@ class CCT4(CompactConvolutionalTransformer):
         Initialize a CCT4 model for image classification:
 
         ```python
-        model = CCT4(image_size=224, conv_layer=[64, 128, 256], num_class=10)
+        model = CCT4(image_size=224, conv_layer=[32, 64, 128], num_class=10)
         ```
 
     """
@@ -285,7 +266,7 @@ class CCT14(CompactConvolutionalTransformer):
         Initialize a CCT14 model for image classification:
 
         ```python
-        model = CCT14(image_size=224, conv_layer=[64, 128, 256], num_class=10)
+        model = CCT14(image_size=224, conv_layer=[96, 192, 384], num_class=10)
         ```
 
     """
