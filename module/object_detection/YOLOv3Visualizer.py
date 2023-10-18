@@ -108,7 +108,7 @@ class YOLOv3Visualizer:
                     col_grid_size = scale_labels.shape[2]
                     num_anchors = scale_labels.shape[3]
 
-                    title = ""
+                    title = f"Shape: {image_with_boxes.shape}"
                     for row_grid_idx in range(row_grid_size):
                         for col_grid_idx in range(col_grid_size):
                             for anchor_idx in range(num_anchors):
@@ -130,7 +130,7 @@ class YOLOv3Visualizer:
                                     if show_highlight:
                                         self.__draw_highlight(image_with_boxes, x_center, y_center, grid_info)
 
-                                    title += f"s_{scale_idx}: g:{row_grid_idx+1}x{col_grid_idx+1} | c:({x_center:.2f}, {y_center:.2f})\n"
+                                    title += f"\ns_{scale_idx}: g:{row_grid_idx+1}x{col_grid_idx+1} | c:({x_center:.2f}, {y_center:.2f})"
 
                     plt.imshow(image_with_boxes)                    
                     plt.title(title)

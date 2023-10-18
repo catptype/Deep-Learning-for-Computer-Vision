@@ -11,7 +11,7 @@ from .YOLOv3Anchor import YOLOv3Anchor as anchor_module
 class YOLOv3DataGenerator:
     def __init__(self, 
                  input,
-                 annotation_dict,
+                 label_list,
                  image_size, 
                  num_anchor, 
                  horizontal_flip=False, 
@@ -27,8 +27,8 @@ class YOLOv3DataGenerator:
 
         # Private artibute    
         self.__input = input
-        self.__annotation_dict = annotation_dict
-        self.__image_size = image_size
+        self.__label_list = label_list
+        self.__image_size = (image_size, image_size) if isinstance(image_size, int) else image_size
         self.__num_anchor = num_anchor
         self.__horizontal_flip = horizontal_flip
         self.__vertical_flip = vertical_flip
@@ -41,52 +41,17 @@ class YOLOv3DataGenerator:
             raise ValueError("Invalid input format")
 
     def __validate_image_size(self, image_size):
-        if not isinstance(image_size, tuple) or len(image_size) != 2:
-            raise ValueError("Invalid image_size. It should be a tuple (width, height).")
+        is_valid_tuple = isinstance(image_size, tuple) and len(image_size) == 2 and all(isinstance(dim, int) for dim in image_size)
+        is_valid_int = isinstance(image_size, int)
+        if not (is_valid_int or is_valid_tuple):
+            raise ValueError("Invalid image_size. It should be an integer tuple (width, height) or an integer number")
 
     def __validate_translation(self, translate_range):
         is_valid_tuple = isinstance(translate_range, tuple) and len(translate_range) == 2
         is_valid_float = isinstance(translate_range, float)
         if not (is_valid_tuple or is_valid_float or translate_range is None):
             raise ValueError("Invalid translation format. It should be a tuple (x, y) or a float.")
-    
-    def __image_reader_cv(self, image_path):
         
-        # Load image
-        image = cv2.imread(image_path)
-        if image is None:
-            raise ValueError(f"Failed to load image from {image_path}")
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        original_height, original_width, _ = image.shape
-        aspect_ratio = original_width / original_height
-
-        # Calculate new image size depend on aspect ratio
-        target_width, target_height = self.__image_size
-        
-        if aspect_ratio == 1: # Perfect square
-            new_width = new_height = min(self.__image_size)
-        
-        elif aspect_ratio > 1: # Landscape orientation (wider than tall)
-            new_width = target_width
-            new_height = int(new_width / aspect_ratio)
-        
-        else: # Portrait orientation (taller than wide)
-            new_height = target_height
-            new_width = int(new_height * aspect_ratio)
-        
-        # Resize the image using interpolation
-        image = cv2.resize(image, (new_width, new_height), interpolation = cv2.INTER_CUBIC)
-        
-        # Convert pixel values from int to float by dividing by 255.0
-        image = image / 255.0
-        image = image.astype("float32")
-        
-        image = tf.convert_to_tensor(image)
-        image_width, image_height = self.__image_size
-        image = tf.ensure_shape(image, (image_height, image_width, 3))
-
-        return image
-    
     def __image_reader_tf(self, image_path):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
@@ -106,7 +71,7 @@ class YOLOv3DataGenerator:
         for obj in root.findall('object'):
             # Class name or label
             class_name = obj.find('classname').text
-            class_idx = self.__annotation_dict[class_name]
+            class_idx = self.__label_list.index(class_name)
             
             # Boundary box positions
             xmin = float(obj.find('bndbox/xmin').text)
@@ -132,7 +97,7 @@ class YOLOv3DataGenerator:
             row_grid_size = self.__image_size[1] // downsampling_scale #64 height
 
             # Initialize label data for the current scale
-            label_data_shape = (row_grid_size, col_grid_size, self.__num_anchor, 5 + len(self.__annotation_dict))
+            label_data_shape = (row_grid_size, col_grid_size, self.__num_anchor, 5 + len(self.__label_list))
             scale_label_data = np.zeros(label_data_shape, dtype=np.float32)
             
             for annotation in annotation_list:
@@ -223,9 +188,9 @@ class YOLOv3DataGenerator:
         print("COMPLETE")
 
         image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
-        small = tf.ensure_shape(small, (self.__image_size[1] // 32, self.__image_size[0] // 32, self.__num_anchor, 5 + len(self.__annotation_dict)))
-        medium = tf.ensure_shape(medium, (self.__image_size[1] // 16, self.__image_size[0] // 16, self.__num_anchor, 5 + len(self.__annotation_dict)))
-        large = tf.ensure_shape(large, (self.__image_size[1] // 8, self.__image_size[0] // 8, self.__num_anchor, 5 + len(self.__annotation_dict)))
+        small = tf.ensure_shape(small, (self.__image_size[1] // 32, self.__image_size[0] // 32, self.__num_anchor, 5 + len(self.__label_list)))
+        medium = tf.ensure_shape(medium, (self.__image_size[1] // 16, self.__image_size[0] // 16, self.__num_anchor, 5 + len(self.__label_list)))
+        large = tf.ensure_shape(large, (self.__image_size[1] // 8, self.__image_size[0] // 8, self.__num_anchor, 5 + len(self.__label_list)))
 
         return image, (small, medium, large)
 
