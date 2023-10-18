@@ -5,6 +5,8 @@ import tensorflow as tf
 from .DataProcessor import DataProcessor as processor
 from .ImageAugmentation import ImageAugmentation
 
+import numpy as np
+
 class ImageDataGenerator:
     """
     Image Data Generator for preprocessing and creating TensorFlow datasets from image data.
@@ -17,7 +19,7 @@ class ImageDataGenerator:
         input (list): A list of input data as tuples (image file path, label string).
         image_size (tuple): A tuple specifying the desired image dimensions (width, height).
         keep_aspect_ratio (bool): If True, maintains the image's aspect ratio during resizing.
-        label_mode (str): The label encoding mode, either "oneshot" for one-hot encoding or "index" for label indices.
+        label_mode (str): The label encoding mode, either "onehot" for one-hot encoding or "index" for label indices.
         horizontal_flip (bool): If True, applies horizontal image flipping during data augmentation.
         vertical_flip (bool): If True, applies vertical image flipping during data augmentation.
         translate_range (tuple or float): A tuple specifying translation range (x, y) or a float for translation range.
@@ -30,13 +32,13 @@ class ImageDataGenerator:
         input,
         image_size, 
         keep_aspect_ratio=True,
-        label_mode="oneshot", # "onehot" or "index"
+        label_mode="onehot", # "onehot" or "index"
         horizontal_flip=False, 
         vertical_flip=False, 
         translate_range=None, 
         rotation_range=None,
         border_method="constant", # "constant" or "replicate"
-        validation_split=None,
+        validation_split=0.0,
     ):
         """
         Initializes the ImageDataGenerator.
@@ -61,7 +63,7 @@ class ImageDataGenerator:
 
         # Private artibute    
         self.__input = input
-        self.__image_size = image_size
+        self.__image_size = (image_size, image_size) if isinstance(image_size, int) else image_size
         self.__keep_aspect_ratio = keep_aspect_ratio
         self.__horizontal_flip = horizontal_flip
         self.__label_mode=label_mode
@@ -78,8 +80,11 @@ class ImageDataGenerator:
             raise ValueError("Invalid input format")
 
     def __validate_image_size(self, image_size):
-        if not isinstance(image_size, tuple) or len(image_size) != 2:
-            raise ValueError("Invalid image_size. It should be a tuple (width, height).")
+        is_valid_tuple = isinstance(image_size, tuple) and len(image_size) == 2 and all(isinstance(dim, int) for dim in image_size)
+        is_valid_int = isinstance(image_size, int)
+        if not (is_valid_int or is_valid_tuple):
+            raise ValueError("Invalid image_size. It should be an integer tuple (width, height) or an integer number")
+        
 
     def __validate_translation(self, translate_range):
         is_valid_tuple = isinstance(translate_range, tuple) and len(translate_range) == 2
@@ -137,13 +142,22 @@ class ImageDataGenerator:
         for func in augmentation_list:
             image = tf.numpy_function(func=func, inp=[image], Tout=tf.float32, name="Image_" + func.__name__)
         
-        image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
+        #image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
 
         return image, label
     
     @tf.autograph.experimental.do_not_convert
     def __test_preprocessing(self, image_path, label):
         image = self.__image_reader_tf(image_path)
+
+        augment = ImageAugmentation(
+            image_size = self.__image_size, 
+            translate_range = self.__translate_range, 
+            rotation_range = self.__rotation_range,
+            border_method = self.__border_method,
+        )
+
+        image = tf.numpy_function(func=augment.padding, inp=[image], Tout=tf.float32, name="Image_" + augment.padding.__name__)
         image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
         return image, label
     
@@ -248,21 +262,27 @@ class ImageDataGenerator:
         test = [(image, label_dict[label]) for image, label in test]
 
         # Create Train dataset
-        image_list = [image for image, _ in train]
-        label_list = [label for _, label in train]
-        train_dataset = tf.data.Dataset.from_tensor_slices((image_list, label_list))  
-        train_dataset = train_dataset.map(self.__train_preprocessing)
-        train_dataset = train_dataset.cache()
-        train_dataset = train_dataset.shuffle(buffer_size=len(train_dataset))
-        train_dataset = train_dataset.batch(batch_size=batch_size, drop_remainder=train_drop_remainder)
-        train_dataset = train_dataset.prefetch(tf.data.AUTOTUNE)
+        if self.__validation_split < 1: # need condition to prevent error during mapping
+            image_list = [image for image, _ in train]
+            label_list = [label for _, label in train]
+            train_dataset = tf.data.Dataset.from_tensor_slices((image_list, label_list))  
+            train_dataset = train_dataset.map(self.__train_preprocessing)
+            train_dataset = train_dataset.cache()
+            train_dataset = train_dataset.shuffle(buffer_size=len(train_dataset))
+            train_dataset = train_dataset.batch(batch_size=batch_size, drop_remainder=train_drop_remainder)
+            train_dataset = train_dataset.prefetch(tf.data.AUTOTUNE)
+        else:
+            train_dataset = None
 
         # Create Test dataset
-        image_list = [image for image, _ in test]
-        label_list = [label for _, label in test]
-        test_dataset = tf.data.Dataset.from_tensor_slices((image_list, label_list))  
-        test_dataset = test_dataset.map(self.__test_preprocessing)
-        test_dataset = test_dataset.batch(batch_size=batch_size, drop_remainder=False)
-        test_dataset = test_dataset.prefetch(tf.data.AUTOTUNE)
+        if self.__validation_split > 0: # need condition to prevent error during mapping
+            image_list = [image for image, _ in test]
+            label_list = [label for _, label in test]
+            test_dataset = tf.data.Dataset.from_tensor_slices((image_list, label_list))  
+            test_dataset = test_dataset.map(self.__test_preprocessing)
+            test_dataset = test_dataset.batch(batch_size=batch_size, drop_remainder=False)
+            test_dataset = test_dataset.prefetch(tf.data.AUTOTUNE)
+        else:
+            test_dataset = None
 
         return train_dataset, test_dataset
