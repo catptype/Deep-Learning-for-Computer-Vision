@@ -55,11 +55,13 @@ class YOLOv3DataGenerator:
     def __image_reader_tf(self, image_path):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
-        image = tf.image.resize(images=image, 
-                                size=self.__image_size,
-                                preserve_aspect_ratio=True,
-                                method="bicubic",
-                                antialias=True)
+        image = tf.image.resize(
+            images = image, 
+            size = self.__image_size,
+            preserve_aspect_ratio = True,
+            method = "bicubic",
+            antialias = True,
+        )
         image = image / 255.0
         return image
     

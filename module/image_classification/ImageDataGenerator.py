@@ -100,7 +100,7 @@ class ImageDataGenerator:
             counter = label_list.count(label)
             print(f"{label}: {counter}")
         
-    def __image_reader_tf(self, image_path):
+    def __image_reader_tf(self, image_path): 
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
         image = tf.image.resize(
@@ -116,7 +116,6 @@ class ImageDataGenerator:
     @tf.autograph.experimental.do_not_convert
     def __train_preprocessing(self, image_path, label):
         image = self.__image_reader_tf(image_path)
-        
         augmentation_list = []
         augment = ImageAugmentation(
             image_size = self.__image_size, 
@@ -141,9 +140,7 @@ class ImageDataGenerator:
 
         for func in augmentation_list:
             image = tf.numpy_function(func=func, inp=[image], Tout=tf.float32, name="Image_" + func.__name__)
-        
-        #image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
-
+        image = tf.ensure_shape(image, (self.__image_size[1], self.__image_size[0], 3))
         return image, label
     
     @tf.autograph.experimental.do_not_convert
@@ -177,6 +174,7 @@ class ImageDataGenerator:
         def train_generator(data):
             for image_path, label in data:
                 image, label = self.__train_preprocessing(image_path, label)
+                
                 yield image, label
         
         def test_generator(data):
@@ -208,7 +206,7 @@ class ImageDataGenerator:
         # Create Train dataset
         train_dataset = tf.data.Dataset.from_generator(
             lambda: train_generator(train),
-            output_signature=(tf.TensorSpec(shape=self.__image_size + (3,), dtype=tf.float32),
+            output_signature=(tf.TensorSpec(shape=(self.__image_size[1], self.__image_size[0], 3,), dtype=tf.float32),
                               tf.TensorSpec(shape=(len(label_set),), dtype=tf.float32))
         )
         train_dataset = train_dataset.cache()
@@ -219,7 +217,7 @@ class ImageDataGenerator:
         # Create Test dataset
         test_dataset = tf.data.Dataset.from_generator(
             lambda: test_generator(test),
-            output_signature=(tf.TensorSpec(shape=self.__image_size + (3,), dtype=tf.float32),
+            output_signature=(tf.TensorSpec(shape=(self.__image_size[1], self.__image_size[0], 3,), dtype=tf.float32),
                               tf.TensorSpec(shape=(len(label_set),), dtype=tf.float32))
         )
         test_dataset = test_dataset.batch(batch_size=batch_size, drop_remainder=False)

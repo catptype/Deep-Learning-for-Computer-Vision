@@ -114,23 +114,23 @@ class ImageAugmentation:
             raise ValueError("Invalid border method. It should be 'constant' or 'replicate'")
         
         image = tf.convert_to_tensor(image) 
-        
         return image
-
+    
     @tf.autograph.experimental.do_not_convert
     def padding(self, image):
-        image_rows, image_columns = image.shape[:2]  # OpenCV format
-        target_rows, target_columns = self.__image_size  # Switched to rows and columns
+        
+        image_height, image_width = image.shape[:2] # OpenCV format
+        target_width, target_height = self.__image_size
 
-        # Calculate the padding sizes for both rows and columns
-        pad_columns = max(0, target_columns - image_columns)
-        pad_rows = max(0, target_rows - image_rows)
+        # Calculate the padding sizes for both width and height
+        pad_width = max(0, target_width - image_width)
+        pad_height = max(0, target_height - image_height)
 
         # Calculate the padding amounts for top, bottom, left, and right
-        top_pad = pad_rows // 2
-        bottom_pad = pad_rows - top_pad
-        left_pad = pad_columns // 2
-        right_pad = pad_columns - left_pad
+        top_pad = pad_height // 2
+        bottom_pad = pad_height - top_pad
+        left_pad = pad_width // 2
+        right_pad = pad_width - left_pad
 
         # Pad the image with zeros (black)
         if self.__border_method == "constant":
@@ -139,6 +139,6 @@ class ImageAugmentation:
             image = cv2.copyMakeBorder(image, top_pad, bottom_pad, left_pad, right_pad, cv2.BORDER_REPLICATE)
         else:
             raise ValueError("Invalid border method. It should be 'constant' or 'replicate")
-
+        
         image = tf.convert_to_tensor(image)
         return image
