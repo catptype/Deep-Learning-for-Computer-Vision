@@ -95,8 +95,8 @@ class YOLOv3DataGenerator:
         for downsampling_scale in [32, 16, 8]: # YOLOv3 always produce 3 scales prediction
             # Calculate grid size for the current scale
             
-            col_grid_size = self.__image_size[0] // downsampling_scale #32 width
-            row_grid_size = self.__image_size[1] // downsampling_scale #64 height
+            col_grid_size = self.__image_size[0] // downsampling_scale # width
+            row_grid_size = self.__image_size[1] // downsampling_scale # height
 
             # Initialize label data for the current scale
             label_data_shape = (row_grid_size, col_grid_size, self.__num_anchor, 5 + len(self.__label_list))
