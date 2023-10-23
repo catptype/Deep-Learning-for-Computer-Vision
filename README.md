@@ -23,7 +23,7 @@ In this section, I present an overview of the deep learning models that I have e
 - [Res2Net](https://arxiv.org/abs/1904.01169)
 
 ### Object Detection
-- [YOLOv3](https://arxiv.org/abs/1804.02767)
+- [YOLOv3](https://arxiv.org/abs/1804.02767) and its loss function idea from [YOLOv1](https://arxiv.org/abs/1506.02640)
 
 ### Transformer
 - [Vision Transformer (ViT)](https://arxiv.org/abs/2010.11929)
