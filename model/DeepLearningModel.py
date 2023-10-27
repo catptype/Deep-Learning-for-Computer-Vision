@@ -38,10 +38,12 @@ class DeepLearningModel(ABC):
         """Display a summary of the model's architecture."""
         self.model.summary()
 
-    def compile(self, 
-                optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
-                loss=tf.losses.CategoricalCrossentropy(),
-                metrics=["accuracy"]):
+    def compile(
+        self, 
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+        loss=tf.losses.CategoricalCrossentropy(),
+        metrics=["accuracy"],
+    ):
         """
         Compile the model for training.
 
@@ -50,6 +52,9 @@ class DeepLearningModel(ABC):
             loss (tf.keras.losses.Loss): The loss function.
             metrics (list): List of metrics to monitor during training.
         """
+        if not isinstance(metrics, list):
+            raise ValueError("metrics must be list.")
+
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
