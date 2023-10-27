@@ -70,49 +70,7 @@ class YOLOv3(DeepLearningModel):
         x = Conv2D(output_feature, (1,1), activation="linear", dtype=tf.float32)(x)
         x = Reshape((x.shape[1], x.shape[2], self.num_anchor, 5 + self.num_class), name=name, dtype=tf.float32)(x)
         return x
-    
-    def yolo_loss(self, y_true, y_pred):
-        # Define constants
-        bce = tf.keras.losses.BinaryCrossentropy(from_logits=True) # Set True because final layer use activation function Linear see at scale_prediction
-        mse = tf.keras.losses.MeanSquaredError()
-        cce = tf.keras.losses.CategoricalCrossentropy(from_logits=True) # Because my implemented YOLOv3DataGenerator output format is one-hot vector
-        lambda_coord = 5.0  # Weight for localization loss, YOLOv1 paper suggest for 5.0
-        lambda_noobj = 0.5  # Weight for confidence loss when no object is present, to make sure the network won’t be dominated by cells that don’t have objects.
-
-        # Extract components from y_true and y_pred based on my implemented YOLOv3DataGenerator
-        true_obj = y_true[..., 0]  # Objectness score
-        true_box = y_true[..., 1:5]  # Bounding box coordinates (x, y, width, height)
-        true_class = y_true[..., 5:]  # Class probabilities
-
-        pred_obj = y_pred[..., 0]  # Objectness score
-        pred_box = y_pred[..., 1:5]  # Bounding box coordinates (x, y, width, height)
-        pred_class = y_pred[..., 5:]  # Class probabilities
-
-        # Create numpy array mask for object and no-object
-        mask_obj = true_obj == 1  # in paper this is Iobj_ij
-        mask_noobj = true_obj == 0  # in paper this is Inoobj_ij
-
-        # Confidence loss
-        obj_loss = bce(true_obj[mask_obj], pred_obj[mask_obj])
-        no_obj_loss = bce(true_obj[mask_noobj], pred_obj[mask_noobj])
-        confidence_loss = obj_loss + (lambda_noobj * no_obj_loss)
-
-        # Box coordinates loss
-        box_loss = mse(true_box[mask_obj], pred_box[mask_obj])
-        box_loss *= lambda_coord
-
-        # Classification loss
-        class_loss = cce(true_class[mask_obj], pred_class[mask_obj])
-
-        # Calculate the total YOLOv3 loss
-        total_loss = confidence_loss + box_loss + class_loss
-
-        return total_loss
-    
-    # Override compile function
-    def compile(self, optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4)):
-        self.model.compile(optimizer=optimizer, loss=self.yolo_loss, metrics=["accuracy"])
-    
+        
     def build_model(self):
         # Input layer
         if isinstance(self.image_size, tuple) and len(self.image_size) == 2:
