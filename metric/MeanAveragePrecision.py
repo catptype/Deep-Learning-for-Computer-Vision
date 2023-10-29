@@ -10,9 +10,10 @@ from tensorflow.keras import backend as K
 
 
 class MeanAveragePrecision(Metric):
-    def __init__(self, num_class, iou_threshold=0.5, max_boxes=100, name='mAP', **kwargs):
+    def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes=100, name='mAP', **kwargs):
         super(MeanAveragePrecision, self).__init__(name=name, **kwargs)
         self.num_class = num_class
+        self.confidence_threshold = confidence_threshold
         self.iou_threshold = iou_threshold
         self.max_boxes = max_boxes
         self.true_positives = [self.add_weight(f'true_positives_{i}', initializer='zeros') for i in range(num_class)]
@@ -52,11 +53,11 @@ class MeanAveragePrecision(Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):       
         batch_size = y_true.shape[0]
         for i in range(batch_size):
-            # Decode to get 5-D shape 
+            # Decode tensor into 1-D shape
             true_obj, true_box, true_class = self.__decoder(y_true[i])
             pred_obj, pred_box, pred_class = self.__decoder(y_pred[i])
 
-            # post processing to for value range [0,1]
+            # Post-processing to for value range [0,1]
             pred_obj = tf.math.sigmoid(pred_obj)
             pred_class = tf.math.softmax(pred_class)
 
@@ -67,22 +68,22 @@ class MeanAveragePrecision(Metric):
             selected_indices = tf.image.non_max_suppression(pred_box, pred_obj, max_output_size=self.max_boxes)
             selected_indices = list(selected_indices.numpy())
             
-            # post processing
-            selected_indices = [idx for idx in selected_indices if pred_obj[idx] >= 0.2]
+            # Post processing
+            selected_indices = [idx for idx in selected_indices if pred_obj[idx] >= self.confidence_threshold]
 
             for true_idx in true_indices:
                 class_idx = tf.argmax(true_class[true_idx])
                 for pred_idx in selected_indices:
                     
                     is_same_position = true_idx == pred_idx
-                    is_valid_iou = self.calculate_iou(true_box[true_idx], pred_box[pred_idx]) > 0.5
+                    is_valid_iou = self.calculate_iou(true_box[true_idx], pred_box[pred_idx]) > self.iou_threshold
                     is_correct_class = tf.argmax(pred_class[pred_idx]) == class_idx
 
                     if is_same_position and is_valid_iou and is_correct_class:
                         self.true_positives[class_idx].assign_add(1)
                     elif is_same_position and is_valid_iou and not is_correct_class:
                         self.false_positives[class_idx].assign_add(1)
-                    elif not is_same_position and pred_obj[pred_idx] > true_obj[true_idx]: # true always 0 and pred always > 0
+                    elif not is_same_position and pred_obj[pred_idx] > true_obj[true_idx]: # true_obj always 0 and pred_obj always > 0
                         self.false_positives[class_idx].assign_add(1)
                     else:
                         self.false_negatives[class_idx].assign_add(1)
@@ -109,6 +110,7 @@ class MeanAveragePrecision(Metric):
         config = super(MeanAveragePrecision, self).get_config()
         config.update({
             'num_class': self.num_class, 
+            'confidence_threshold': self.confidence_threshold,
             'iou_threshold': self.iou_threshold,
             'max_boxes': self.max_boxes,
         })
