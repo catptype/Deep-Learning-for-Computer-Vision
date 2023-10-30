@@ -10,7 +10,7 @@ from tensorflow.keras import backend as K
 
 
 class MeanAveragePrecision(Metric):
-    def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes=100, name='mAP', **kwargs):
+    def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes='auto', name='mAP', **kwargs):
         super(MeanAveragePrecision, self).__init__(name=name, **kwargs)
         self.num_class = num_class
         self.confidence_threshold = confidence_threshold
@@ -62,19 +62,21 @@ class MeanAveragePrecision(Metric):
             pred_class = tf.math.softmax(pred_class)
 
             true_indices = tf.reshape(tf.where(true_obj == 1.0), [-1])
-            true_indices = list(true_indices.numpy())
+            true_indices = true_indices.numpy()
 
             # Apply NMS
-            selected_indices = tf.image.non_max_suppression(pred_box, pred_obj, max_output_size=self.max_boxes)
-            selected_indices = list(selected_indices.numpy())
-            
-            # Post processing
-            selected_indices = [idx for idx in selected_indices if pred_obj[idx] >= self.confidence_threshold]
+            max_boxes = min(len(true_indices), 10) if self.max_boxes == 'auto' else self.max_boxes
+
+            selected_indices = tf.image.non_max_suppression(pred_box, pred_obj, max_output_size=max_boxes, score_threshold=self.confidence_threshold)
+            selected_indices = selected_indices.numpy()
+
+            # Discard all boxes with negative width height
+            selected_indices = [idx for idx in selected_indices if pred_box[idx][2] >= 0 and pred_box[idx][3] >= 0]
 
             for true_idx in true_indices:
                 class_idx = tf.argmax(true_class[true_idx])
+                
                 for pred_idx in selected_indices:
-                    
                     is_same_position = true_idx == pred_idx
                     is_valid_iou = self.calculate_iou(true_box[true_idx], pred_box[pred_idx]) > self.iou_threshold
                     is_correct_class = tf.argmax(pred_class[pred_idx]) == class_idx
