@@ -66,10 +66,8 @@ class MeanAveragePrecision(Metric):
 
         return iou
 
-
-    #@tf.autograph.experimental.do_not_convert
-    @tf.function
-    def update_state    (self, y_true, y_pred, sample_weight=None):       
+    @tf.autograph.experimental.do_not_convert
+    def update_state(self, y_true, y_pred, sample_weight=None):       
         total_detect_result = {}
         batch_size = y_true.shape[0]
         
