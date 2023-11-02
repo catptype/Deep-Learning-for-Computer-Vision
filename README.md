@@ -3,14 +3,14 @@ A personal repository documenting my deep learning self-study journey with pract
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Models](#models-sorted-by-year)
-- [Extension Modules](#extension-modules)
-- [Evaluation Modules](#evaluation-modules)
+- [Model implementation](#model-implementation)
+- [Module implementation](#module-implementation)
+- [Other Implementation](#other-Implementation)
 
 ## Introduction
 This repository serves as a digital archive of my journey into deep learning. My primary is focusing on practical implementations using TensorFlow and Keras. Through this self-study, I aim to gain a deeper understanding of deep learning concepts and techniques.
 
-## Models (Sorted by Year)
+## Model implementation
 In this section, I present an overview of the deep learning models that I have explored and personally implemented. Each model is accompanied by an URL link to its respective paper for reference.
 
 ### CNN Architecture
@@ -29,10 +29,22 @@ In this section, I present an overview of the deep learning models that I have e
 - [Vision Transformer (ViT)](https://arxiv.org/abs/2010.11929)
 - [Compact Transformers: CVT & CCT](https://arxiv.org/abs/2104.05704)
 
-## Extension modules
-In addition to the core models, I have explored various extension modules that enhance model performance and capabilities. These modules are essential for creating state-of-the-art deep learning architectures.
+## Module implementation
+In addition to the core models, I have explored extension modules that enhance model performance and capabilities. These modules are essential for creating state-of-the-art deep learning architectures.
+
+### Extension modules
 - [Squeeze-and-Excitation Networks (SE block)](https://arxiv.org/abs/1709.01507)
 - [Convolutional Block Attention Module (CBAM)](https://arxiv.org/abs/1807.06521) 
 
-## Evaluation modules
+### Evaluation module
 - [Gradient-weighted Class Activation Mapping (Gran-CAM)](https://arxiv.org/abs/1610.02391)
+
+## Other Implementation
+
+### Data Generator
+- Image data generator for image classifcation: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/image_classification)]
+- Image data generator for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/object_detection)]
+
+### Evaluation Metrics
+- F1 score: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py)]
+- Mean Average Precision (mAP) for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py)]
