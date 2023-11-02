@@ -85,7 +85,6 @@ class YOLOv3DataGenerator:
             annotation_list.append(annotation)
         
         annotation_list = tf.convert_to_tensor(annotation_list)
-        annotation_list = tf.ensure_shape(annotation_list, (None, annotation_list.shape[-1]))
         return annotation_list
     
     def __generate_annotation_label(self, annotation_list):
@@ -126,7 +125,7 @@ class YOLOv3DataGenerator:
                     scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 4] = height
                     scale_label_data[row_grid_idx, col_grid_idx, best_anchor, 5 + int(class_id)] = 1.  # Class one-hot encoding
             
-                label_data.append(scale_label_data)
+            label_data.append(scale_label_data)
 
         return label_data[0], label_data[1], label_data[2]
     
