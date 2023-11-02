@@ -65,7 +65,7 @@ class YOLOv3(DeepLearningModel):
         return x
     
     def scale_prediction(self, input, num_feature, name=None):
-        output_feature = (self.num_class + 5) * 3
+        output_feature = (self.num_class + 5) * self.num_anchor
         x = self.conv2D_block(input, num_feature)
         x = Conv2D(output_feature, (1,1), activation="linear", dtype=tf.float32)(x)
         x = Reshape((x.shape[1], x.shape[2], self.num_anchor, 5 + self.num_class), name=name, dtype=tf.float32)(x)
