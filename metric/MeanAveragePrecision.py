@@ -8,7 +8,7 @@ tf.config.run_functions_eagerly(True)
 from tensorflow.keras.metrics import Metric
 from tensorflow.keras import backend as K
 from sklearn.metrics import precision_recall_curve as pr_curve, auc
-
+from icecream import ic
 
 class MeanAveragePrecision(Metric):
     def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes='auto', name='mAP', **kwargs):
@@ -30,7 +30,7 @@ class MeanAveragePrecision(Metric):
 
         # Update x and y coordinates for valid boxes
         valid_boxes = ~invalid_boxes
-        x_indices, y_indices, _ = np.indices(tensor.shape[:-1])
+        _, x_indices, y_indices, _ = np.indices(tensor.shape[:-1])
         tensor_np[valid_boxes, 1] += x_indices[valid_boxes]
         tensor_np[valid_boxes, 2] += y_indices[valid_boxes]
 
@@ -38,8 +38,9 @@ class MeanAveragePrecision(Metric):
     
     def __decoder(self, tensor):
         # Format (Object_confidence, x, y, width, height, class_prob1, class_prob2, ...)
-        tensor = self.__pre_processing(tensor)        
-        tensor = tf.reshape(tensor, [-1, tensor.shape[-1]])
+        tensor = self.__pre_processing(tensor)
+        batch, x, y, anchor, data = tensor.shape
+        tensor = tf.reshape(tensor, [batch, -1, data])
         object_score = tensor[..., 0]
         box_coordinate = tensor[..., 1:5]
         class_prob = tensor[..., 5:]
@@ -69,49 +70,56 @@ class MeanAveragePrecision(Metric):
     @tf.autograph.experimental.do_not_convert
     def update_state(self, y_true, y_pred, sample_weight=None):       
         total_detect_result = {}
+
+        # Decode tensor into batch of 1-D shape
+        true_obj, true_box, true_class = self.__decoder(y_true)
+        pred_obj, pred_box, pred_class = self.__decoder(y_pred)
+
+        # Post-processing to for value range [0,1]
+        pred_obj = tf.math.sigmoid(pred_obj)
+        pred_class = tf.math.softmax(pred_class)
+
+        # Get all true_box indices
+        true_indices = tf.where(true_obj == 1.0)
+
+        # post processing true_indices
+        batch_indices, unique_idx = tf.unique(true_indices[:, 0])
+        true_indices = tf.dynamic_partition(true_indices[:, 1], unique_idx, len(batch_indices))
+        true_indices = [tensor.numpy().tolist() for tensor in true_indices]
+
         batch_size = y_true.shape[0]
         
         for i in range(batch_size):
-            # Decode tensor into 1-D shape
-            true_obj, true_box, true_class = self.__decoder(y_true[i])
-            pred_obj, pred_box, pred_class = self.__decoder(y_pred[i])
-
-            # Post-processing to for value range [0,1]
-            pred_obj = tf.math.sigmoid(pred_obj)
-            pred_class = tf.math.softmax(pred_class)
-
-            # Get all true_box indices
-            true_indices = tf.reshape(tf.where(true_obj == 1.0), [-1])
-            true_indices = true_indices.numpy().tolist()
 
             # Apply NMS
-            max_boxes = min(len(true_indices), 10) if self.max_boxes == 'auto' else self.max_boxes
-
-            selected_indices = tf.image.non_max_suppression(pred_box, pred_obj, max_output_size=max_boxes, score_threshold=self.confidence_threshold)
+            max_boxes = min(len(true_indices[i]), 10) if self.max_boxes == 'auto' else self.max_boxes
+            selected_indices = tf.image.non_max_suppression(pred_box[i], pred_obj[i], max_output_size=max_boxes, score_threshold=self.confidence_threshold)
             selected_indices = selected_indices.numpy().tolist()
 
             # Counting TP
-            while true_indices:
-                true_idx = true_indices.pop(0)
-                class_idx = tf.argmax(true_class[true_idx])
+            true_indices_copy = true_indices[i].copy()
+
+            while true_indices_copy:
+                true_idx = true_indices_copy.pop(0)
+                class_idx = tf.argmax(true_class[i][true_idx])
                 pred_idx_list = selected_indices.copy() 
 
                 while pred_idx_list:
                     pred_idx = pred_idx_list.pop(0)
-                    if tf.argmax(pred_class[pred_idx]) != class_idx:
+                    if tf.argmax(pred_class[i][pred_idx]) != class_idx:
                         continue
 
-                    if self.calculate_iou(true_box[true_idx], pred_box[pred_idx]) > self.iou_threshold:
+                    if self.calculate_iou(true_box[i][true_idx], pred_box[i][pred_idx]) > self.iou_threshold:
                         class_idx = int(class_idx.numpy())
-                        confidence_score = pred_obj[pred_idx].numpy()
+                        confidence_score = pred_obj[i][pred_idx].numpy()
                         total_detect_result.setdefault(class_idx, []).append((confidence_score, "TP"))
                         selected_indices.remove(pred_idx)
 
             # Counting FP for remaining boxes
             while selected_indices:
                 pred_idx = selected_indices.pop(0)
-                class_idx = int(tf.argmax(pred_class[pred_idx]).numpy())
-                confidence_score = pred_obj[pred_idx].numpy()
+                class_idx = int(tf.argmax(pred_class[i][pred_idx]).numpy())
+                confidence_score = pred_obj[i][pred_idx].numpy()
                 total_detect_result.setdefault(class_idx, []).append((confidence_score, "FP"))
         
         self.__total_detect_result = total_detect_result
