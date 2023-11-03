@@ -15,17 +15,6 @@ class ImageDataGenerator:
     deep learning models. It supports various preprocessing options such as resizing, augmentation,
     and validation data splitting.
 
-    Attributes:
-        input (list): A list of input data as tuples (image file path, label string).
-        image_size (tuple): A tuple specifying the desired image dimensions (width, height).
-        keep_aspect_ratio (bool): If True, maintains the image's aspect ratio during resizing.
-        label_mode (str): The label encoding mode, either "onehot" for one-hot encoding or "index" for label indices.
-        horizontal_flip (bool): If True, applies horizontal image flipping during data augmentation.
-        vertical_flip (bool): If True, applies vertical image flipping during data augmentation.
-        translate_range (tuple or float): A tuple specifying translation range (x, y) or a float for translation range.
-        rotation_range (tuple): A tuple specifying the rotation range (min_angle, max_angle).
-        border_method (str): The method for handling borders during augmentation, either "constant" or "replicate".
-        validation_split (float): The fraction of data to use for validation.
     """
     def __init__(
         self, 
@@ -45,13 +34,13 @@ class ImageDataGenerator:
 
         Args:
             input (list): A list of input data as tuples (image file path, label string).
-            image_size (tuple): A tuple specifying the desired image dimensions (width, height).
+            image_size (tuple or int): A tuple specifying the desired image dimensions (width, height), or an integer for a square image.
             keep_aspect_ratio (bool): If True, maintains the image's aspect ratio during resizing.
             label_mode (str): The label encoding mode, either "oneshot" for one-hot encoding or "index" for label indices.
             horizontal_flip (bool): If True, applies horizontal image flipping during data augmentation.
             vertical_flip (bool): If True, applies vertical image flipping during data augmentation.
-            translate_range (tuple or float): A tuple specifying translation range (x, y) or a float for translation range.
-            rotation_range (tuple): A tuple specifying the rotation range (min_angle, max_angle).
+            translate_range (tuple or float): A tuple specifying translation range (x, y) as a percentage of image size, or a float for equal horizontal and vertical translation.
+            rotation_range (int): An integer specifying the rotation range in (-rotation_range, rotation_range) degrees.
             border_method (str): The method for handling borders during augmentation, either "constant" or "replicate".
             validation_split (float): The fraction of data to use for validation.
         """
@@ -60,6 +49,7 @@ class ImageDataGenerator:
         self.__validate_input(input)
         self.__validate_image_size(image_size)
         self.__validate_translation(translate_range)
+        self.__validate_rotation(rotation_range)
 
         # Private artibute    
         self.__input = input
@@ -77,7 +67,7 @@ class ImageDataGenerator:
     # Private methods
     def __validate_input(self, input):
         if not isinstance(input, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in input):
-            raise ValueError("Invalid input format")
+            raise ValueError("Invalid input. It should be a list of tuple (image file path, label string)")
 
     def __validate_image_size(self, image_size):
         is_valid_tuple = isinstance(image_size, tuple) and len(image_size) == 2 and all(isinstance(dim, int) for dim in image_size)
@@ -85,12 +75,16 @@ class ImageDataGenerator:
         if not (is_valid_int or is_valid_tuple):
             raise ValueError("Invalid image_size. It should be an integer tuple (width, height) or an integer number")
         
-
     def __validate_translation(self, translate_range):
         is_valid_tuple = isinstance(translate_range, tuple) and len(translate_range) == 2
         is_valid_float = isinstance(translate_range, float)
         if not (is_valid_tuple or is_valid_float or translate_range is None):
-            raise ValueError("Invalid translation format. It should be a tuple (x, y) or a float.")
+            raise ValueError("Invalid translate_range. It should be a tuple (float, float) or a float.")
+    
+    def __validate_rotation(self, rotation_range):
+        is_valid_int = isinstance(rotation_range, int) and rotation_range >= 0
+        if not (is_valid_int or rotation_range is None):
+            raise ValueError("Invalid rotation_range. It should be a positive integer")
     
     def __summary(self, data_list, text):
         label_list = [label for _, label in data_list]
