@@ -9,17 +9,17 @@ from .YOLOv3Augmentation import YOLOv3Augmentation
 from .YOLOv3Anchor import YOLOv3Anchor as anchor_module
 
 class YOLOv3DataGenerator:
-    def __init__(self, 
-                 input,
-                 label_list,
-                 image_size, 
-                 num_anchor, 
-                 horizontal_flip=False, 
-                 vertical_flip=False, 
-                 translate_range=None, 
-                 rotation_range=None,
-                 ):
-        
+    def __init__(
+        self, 
+        input,
+        label_list,
+        image_size, 
+        num_anchor, 
+        horizontal_flip=False, 
+        vertical_flip=False, 
+        translate_range=None, 
+        rotation_range=None,
+    ):  
         # Error handler
         self.__validate_input(input)
         self.__validate_image_size(image_size)

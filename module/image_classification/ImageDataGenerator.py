@@ -5,8 +5,6 @@ import tensorflow as tf
 from .DataProcessor import DataProcessor as processor
 from .ImageAugmentation import ImageAugmentation
 
-import numpy as np
-
 class ImageDataGenerator:
     """
     Image Data Generator for preprocessing and creating TensorFlow datasets from image data.

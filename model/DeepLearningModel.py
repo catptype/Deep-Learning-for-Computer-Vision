@@ -15,12 +15,13 @@ class DeepLearningModel(ABC):
 
     Methods:
         build_model(): Abstract method to build the neural network architecture.
-        summary(): Display a summary of the model's architecture.
         compile(optimizer, loss, metrics): Compile the model for training.
-        train(train_data, test_data, epochs, callbacks): Train the model.
         evaluate(test_data, test_labels): Evaluate the model on test data.
+        get_input_shape(): Get the input shape of the model.
         predict(data): Make predictions on input data.
         save(name): Save the trained model to a file.
+        summary(): Display a summary of the model's architecture.
+        train(train_data, test_data, epochs, callbacks): Train the model.
     """
     def __init__(self):
         self.model = self.build_model()
@@ -33,10 +34,6 @@ class DeepLearningModel(ABC):
         Subclasses must implement this method.
         """
         pass
-
-    def summary(self):
-        """Display a summary of the model's architecture."""
-        self.model.summary()
 
     def compile(
         self, 
@@ -56,6 +53,67 @@ class DeepLearningModel(ABC):
             raise ValueError("metrics must be list.")
 
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    
+    def evaluate(self, test_data, test_labels):
+        """
+        Evaluate the model on test data.
+
+        Args:
+            test_data: Test data.
+            test_labels: Ground truth labels for test data.
+
+        Returns:
+            List of evaluation metrics.
+        """
+        return self.model.evaluate(test_data, test_labels)
+
+    def get_input_shape(self):
+        """
+        Get the input shape of the model.
+
+        Returns:
+            tuple: A tuple representing the input shape of the model in the format (height, width, channel).
+        """
+        _, height, width, channel = self.model.input_shape
+        return (height, width, channel)
+    
+    def predict(self, data):
+        """
+        Make predictions on input data.
+
+        Args:
+            data: Input data for predictions.
+
+        Returns:
+            Model predictions.
+        """
+        return self.model.predict(data)
+    
+    def save(self, name=None):
+        """
+        Save the trained model to a file.
+
+        Args:
+            name (str): Optional. The name to use for the saved model file (without file extension).
+                        If not provided, the model's name is used as the default name.
+
+        Note:
+            - The saved model file will have an ".h5" extension.
+            - If mixed precision training (FP16) is enabled, "_fp16" is appended to the model name.
+            - The saved model will be stored in the "export model" directory.
+        """
+        if name is None:
+            model_name = self.model.name
+        else:
+            model_name = name
+            
+        if "mixed_float16" in str(mixed_precision.global_policy()):
+            model_name += "_fp16"
+        self.model.save(f"export model\\{model_name}.h5", include_optimizer=False)
+    
+    def summary(self):
+        """Display a summary of the model's architecture."""
+        self.model.summary()
 
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
         """
@@ -78,51 +136,3 @@ class DeepLearningModel(ABC):
             self.history.epoch += [epoch for epoch in new_history.epoch]
             for key in self.history.history.keys():
                 self.history.history[key] += new_history.history[key]
-
-    def evaluate(self, test_data, test_labels):
-        """
-        Evaluate the model on test data.
-
-        Args:
-            test_data: Test data.
-            test_labels: Ground truth labels for test data.
-
-        Returns:
-            List of evaluation metrics.
-        """
-        return self.model.evaluate(test_data, test_labels)
-
-    def predict(self, data):
-        """
-        Make predictions on input data.
-
-        Args:
-            data: Input data for predictions.
-
-        Returns:
-            Model predictions.
-        """
-        return self.model.predict(data)
-
-    def save(self, name=None):
-        """
-        Save the trained model to a file.
-
-        Args:
-            name (str): Optional. The name to use for the saved model file (without file extension).
-                        If not provided, the model's name is used as the default name.
-
-        Note:
-            - The saved model file will have an ".h5" extension.
-            - If mixed precision training (FP16) is enabled, "_fp16" is appended to the model name.
-            - The saved model will be stored in the "export model" directory.
-        """
-        if name is None:
-            model_name = self.model.name
-        else:
-            model_name = name
-            
-        if "mixed_float16" in str(mixed_precision.global_policy()):
-            model_name += "_fp16"
-        self.model.save(f"export model\\{model_name}.h5", include_optimizer=False)
-

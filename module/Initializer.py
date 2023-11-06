@@ -1,3 +1,4 @@
+import sys
 import tensorflow as tf
 
 class Initializer:
@@ -11,3 +12,9 @@ class Initializer:
         gpus = tf.config.experimental.list_physical_devices('GPU')
         for gpu in gpus: 
             tf.config.experimental.set_memory_growth(gpu, True)
+
+    @staticmethod
+    def show_version():
+        print(f"TensorFlow version: {tf.__version__}")
+        print(f"Python version: {sys.version}")
+        
