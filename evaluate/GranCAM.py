@@ -7,50 +7,29 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-# Avoid out of memory errors by setting GPU Memory Consumption Growth
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus: 
-    tf.config.experimental.set_memory_growth(gpu, True)
-
-class GranCAM():
+class GranCAM:
     """
     Class for generating Gradient-weighted Class Activation Maps (Grad-CAM) for a given model and image.
     Note: Incompatible with models using mixed precision float16.
     """
-    def __init__(self, model, layer_name=None):
+    def __init__(self, model):
         """
         Initializes the GranCAM instance.
 
         Parameters:
             model (str or tf.keras.Model): The pre-trained model or the path to a saved model (.h5).
-            layer_name (str): The name of the layer whose activations are used for generating CAM.
-                             If None, the last Conv2D layer in the model is chosen.
-
-        Returns:
-            None
         """
-        self.grad_model = self.__build_model(model, layer_name)
+        self.model = self.__build_model(model)
     
-    def __build_model(self, model, layer_name):
-        """
-        Builds a new model that connects the specified layer to the output, forming the Grad-CAM model.
-
-        Parameters:
-            model (str or tf.keras.Model): The pre-trained model or the path to a saved model (.h5).
-            layer_name (str): The name of the layer whose activations are used for generating CAM.
-                             If None, the last Conv2D layer in the model is chosen.
-
-        Returns:
-            tf.keras.Model: The Grad-CAM model.
-        """
+    # Private methods
+    def __build_model(self, model):
         if isinstance(model, str) and model.endswith(".h5"):
             print("Load model ... ", end="")
             model = load_model(model)
             print("Complete")
 
-        if layer_name is None:
-            conv2d_layers = [layer for layer in model.layers if isinstance(layer, tf.keras.layers.Conv2D)]
-            layer_name = conv2d_layers[-1].name
+        conv2d_layers = [layer for layer in model.layers if isinstance(layer, tf.keras.layers.Conv2D)]
+        layer_name = conv2d_layers[-1].name
 
         print("Generate GranCAM model ... ", end="")
         conv2d_output = model.get_layer(layer_name).output
@@ -59,18 +38,12 @@ class GranCAM():
         return model
     
     def __get_epsilon(self):
-        """
-        Calculates the machine epsilon, which is the smallest positive number that can be added to 1.0
-        and still yield a result different from 1.0. Used for numerical stability.
-
-        Returns:
-            float: The machine epsilon.
-        """
         epsilon = 1
         while 1 + epsilon != 1:
             epsilon /= 2.        
         return epsilon 
     
+    # Public methods
     def generate_heatmap(self, image, class_index=None, overlay=False):
         """
         Generates the Gradient-weighted Class Activation Map (Grad-CAM) for a given image.
@@ -93,7 +66,7 @@ class GranCAM():
         
         # Calculate gradient
         with tf.GradientTape() as tape:
-            conv_outputs, predictions = self.grad_model(image_4D)
+            conv_outputs, predictions = self.model(image_4D)
             if class_index is None:
                 class_index = np.argmax(predictions)
             loss = predictions[:, class_index]
