@@ -30,7 +30,6 @@ In this section, I present an overview of the deep learning models that I have e
 - [Compact Transformers: CVT & CCT](https://arxiv.org/abs/2104.05704)
 
 ## Module implementation
-In addition to the core models, I have explored extension modules that enhance model performance and capabilities. These modules are essential for creating state-of-the-art deep learning architectures.
 
 ### Extension modules
 - [Squeeze-and-Excitation Networks (SE block)](https://arxiv.org/abs/1709.01507)
@@ -46,5 +45,5 @@ In addition to the core models, I have explored extension modules that enhance m
 - Image data generator for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/object_detection)]
 
 ### Evaluation Metrics
-- F1 score: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py)]
+- F1 Score: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py)]
 - Mean Average Precision (mAP) for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py)]
