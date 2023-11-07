@@ -18,6 +18,15 @@ class DirectoryProcessor:
         return path_list
     
     @staticmethod
+    def get_only_files_from_directory(directory, extension):
+        path_list = [os.path.join(directory, file) for file in os.listdir(directory) if any(file.endswith(ext) for ext in extension)]
+        return path_list
+    
+    @staticmethod
     def move_file(source, destination):
+        destination_dir = os.path.dirname(destination)
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        
         shutil.move(source, destination)
         pass
