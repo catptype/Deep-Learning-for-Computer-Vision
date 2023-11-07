@@ -47,3 +47,6 @@ In this section, I present an overview of the deep learning models that I have e
 ### Evaluation Metrics
 - F1 Score: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py)]
 - Mean Average Precision (mAP) for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py)]
+
+### Etc.
+- Image organizer based on class prediction [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/ImageOrganizer.py)]
