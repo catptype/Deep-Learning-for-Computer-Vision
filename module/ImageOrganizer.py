@@ -46,11 +46,13 @@ class ImageOrganizer:
         image_dataset = image_dataset.map(self.__image_resize)
         image_batch = image_dataset.batch(self.batch_size)
 
-        progress_bar = tf.keras.utils.Progbar(len(image_batch), 
-                                            width=20, 
-                                            interval=0.2, 
-                                            unit_name='batch')
-        
+        progress_bar = tf.keras.utils.Progbar(
+            len(image_batch), 
+            width=20, 
+            interval=0.2, 
+            unit_name='batch',
+        )
+
         for batch in image_batch:
             prediction_batch = self.model.predict(batch)
             class_score_batch = np.max(prediction_batch, axis=-1)  # Get class scores
@@ -80,7 +82,7 @@ class ImageOrganizer:
         if label_list is not None:
             label_list.append("UNKNOWN")
 
-        image_path_list = DirectoryProcessor.get_only_files_from_directory(self.target_dir, [".jpg", ".png"])
+        image_path_list = DirectoryProcessor.get_only_files(self.target_dir, [".jpg", ".png"], include_sub_dir=False)
         predict_result = self.__predict(image_path_list)
         
         print("Moving files ...")
