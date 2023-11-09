@@ -98,8 +98,8 @@ class ImageDataGenerator:
         image = tf.image.resize(
             images = image, 
             size = self.__image_size, 
+            method = "bilinear", 
             preserve_aspect_ratio = self.__keep_aspect_ratio, 
-            method = "bicubic", 
             antialias = True,
         )
         image = image / 255.0

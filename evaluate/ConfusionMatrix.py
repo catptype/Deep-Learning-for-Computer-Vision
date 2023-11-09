@@ -57,9 +57,13 @@ class ConfusionMatrix:
     def __image_resize(self, image_path):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
-        image = tf.image.resize(image, (self.__input_shape[0], self.__input_shape[1]),
-                                preserve_aspect_ratio=True,
-                                antialias=True)
+        image = tf.image.resize(
+            image, 
+            (self.__input_shape[0], self.__input_shape[1]),
+            method = "bilinear",
+            preserve_aspect_ratio = True,
+            antialias = True,
+        )
         image = tf.image.resize_with_pad(image, self.__input_shape[0], self.__input_shape[1])
         image = image / 255.0
         
@@ -73,10 +77,12 @@ class ConfusionMatrix:
         batch_image = batch_image.map(self.__image_resize)
         batch_image = batch_image.batch(batch_size)
 
-        progress_bar = tf.keras.utils.Progbar(len(batch_image), 
-                                            width=20, 
-                                            interval=0.2, 
-                                            unit_name='batch')
+        progress_bar = tf.keras.utils.Progbar(
+            len(batch_image), 
+            width=20, 
+            interval=0.2, 
+            unit_name='batch',
+        )
         
         for batch in batch_image:
             prediction = self.__model.predict(batch)

@@ -58,8 +58,8 @@ class YOLOv3DataGenerator:
         image = tf.image.resize(
             images = image, 
             size = self.__image_size,
-            preserve_aspect_ratio = True,
-            method = "bicubic",
+            method = "bilinear", 
+            preserve_aspect_ratio = True, 
             antialias = True,
         )
         image = image / 255.0

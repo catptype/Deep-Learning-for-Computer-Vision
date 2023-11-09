@@ -31,7 +31,13 @@ class ImageOrganizer:
         _, height, width, _ = self.model.input_shape
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
-        image = tf.image.resize(image, (height, width), preserve_aspect_ratio=True, antialias=True)
+        image = tf.image.resize(
+            image, 
+            (height, width), 
+            method = "bilinear", 
+            preserve_aspect_ratio = self.__keep_aspect_ratio, 
+            antialias = True,
+        )
         image = tf.image.resize_with_pad(image, height, width)
         image = image / 255.0
         
