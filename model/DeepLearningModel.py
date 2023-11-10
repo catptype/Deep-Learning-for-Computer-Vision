@@ -62,8 +62,6 @@ class DeepLearningModel(ABC):
             test_data: Test data.
             test_labels: Ground truth labels for test data.
 
-        Returns:
-            List of evaluation metrics.
         """
         return self.model.evaluate(test_data, test_labels)
 
@@ -76,6 +74,15 @@ class DeepLearningModel(ABC):
         """
         _, height, width, channel = self.model.input_shape
         return (height, width, channel)
+
+    def get_model_name(self):
+        """
+        Get the model name.
+
+        Return:
+            Str: model name as string.
+        """
+        return self.model.name
     
     def predict(self, data):
         """
@@ -112,7 +119,9 @@ class DeepLearningModel(ABC):
         self.model.save(f"export model\\{model_name}.h5", include_optimizer=False)
     
     def summary(self):
-        """Display a summary of the model's architecture."""
+        """
+        Display a summary of the model's architecture.
+        """
         self.model.summary()
 
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
