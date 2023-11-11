@@ -35,7 +35,7 @@ class ImageOrganizer:
             image, 
             (height, width), 
             method = "bilinear", 
-            preserve_aspect_ratio = self.__keep_aspect_ratio, 
+            preserve_aspect_ratio = True, 
             antialias = True,
         )
         image = tf.image.resize_with_pad(image, height, width)
