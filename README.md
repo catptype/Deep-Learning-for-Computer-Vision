@@ -49,4 +49,6 @@ In this section, I present an overview of the deep learning models that I have e
 - Mean Average Precision (mAP) for object detection: [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py)]
 
 ### Etc.
-- Image organizer based on class prediction [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/ImageOrganizer.py)]
+- Image organizer based on class prediction [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageOrganizer.py)]
+- Image similarity retrieval [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageSimilarity.py)], and its feature vector database generator as a JSON file [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageFeatureExtractor.py)]
+- Text-based progress bar [[Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/TextProgressBar.py)]
