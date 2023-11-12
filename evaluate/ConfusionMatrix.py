@@ -1,7 +1,3 @@
-# Make python won’t try to write .pyc files on the import of source modules
-import sys
-sys.dont_write_bytecode = True
-
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf

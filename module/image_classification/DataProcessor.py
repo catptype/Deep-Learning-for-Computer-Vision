@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import random
 import tensorflow as tf
 from collections import Counter

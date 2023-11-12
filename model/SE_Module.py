@@ -1,7 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
-import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
     BatchNormalization,
@@ -13,7 +9,6 @@ from tensorflow.keras.layers import (
     ReLU,
     Reshape,
 )
-
 
 class SE_Module(Layer):
     """
@@ -90,7 +85,5 @@ class SE_Module(Layer):
     
     def get_config(self):
         config = super(SE_Module, self).get_config()
-        config.update({
-            'ratio': self.ratio,
-        })
+        config.update({'ratio': self.ratio})
         return config

@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import tensorflow as tf
 from .DataProcessor import DataProcessor as processor
 from .ImageAugmentation import ImageAugmentation

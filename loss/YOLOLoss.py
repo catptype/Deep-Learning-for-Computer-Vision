@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import tensorflow as tf
 
 class YOLOLoss(tf.keras.losses.Loss):

@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import math
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,13 +1,9 @@
-import sys
-sys.dont_write_bytecode = True
-
 import numpy as np
 import tensorflow as tf
 tf.config.run_functions_eagerly(True)
 
 from tensorflow.keras.metrics import Metric
 from sklearn.metrics import precision_recall_curve as pr_curve, auc
-
 
 class MeanAveragePrecision(Metric):
     def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes='auto', name='mAP', **kwargs):

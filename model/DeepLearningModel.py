@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import tensorflow as tf
 from abc import ABC, abstractmethod
 from tensorflow.keras import mixed_precision

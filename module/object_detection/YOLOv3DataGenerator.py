@@ -1,7 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
-import cv2
 import tensorflow as tf
 import numpy as np
 import xml.etree.ElementTree as ET

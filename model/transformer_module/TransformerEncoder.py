@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 from tensorflow.keras.layers import (
     Add,
     Dense,

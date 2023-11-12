@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import tensorflow as tf
 from tensorflow.keras.layers import (
     AveragePooling2D,

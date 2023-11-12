@@ -1,6 +1,3 @@
-import sys
-sys.dont_write_bytecode = True
-
 import cv2
 import random
 import numpy as np
