@@ -76,13 +76,14 @@ This repository serves as a digital archive of my journey into deep learning. My
 ### Evaluation Metrics
 | Metrics            | Code Link         |
 |---------------------------|-------------------|
-| Confusion Matrix | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/evaluate/ConfusionMatrix.py) |
-| F1 Score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py) |
+| Confusion matrix | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/evaluate/ConfusionMatrix.py) |
+| F1 score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py) |
 | Mean Average Precision (mAP) for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py) |
 
 ### Applications and Utilities
 | Applications / Utilities  | Code Link         |
 |---------------------------|-------------------|
+| Directory processor | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/DirectoryProcessor.py) |
 | Image organizer based on class prediction | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageOrganizer.py) |
 | Image similarity retrieval | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageSimilarity.py) |
 | Image feature vector DB generator (JSON format) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageFeatureExtractor.py) |
