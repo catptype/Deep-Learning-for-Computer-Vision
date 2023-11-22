@@ -36,7 +36,7 @@ class ImportModel(DeepLearningModel):
         """
         try:
             print("Loading model ...")
-            model = tf.keras.models.load_model(self.h5file)
+            model = tf.keras.models.load_model(self.h5file, compile=False)
             print("Model loaded successfully. No custom Keras layers detected.")
         except ValueError:
             print("Error: Custom Keras layers detected.\nLoading model with custom objects ...", end="")
@@ -54,7 +54,7 @@ class ImportModel(DeepLearningModel):
                 'TransformerEncoder': TransformerEncoder,
             }
 
-            model = tf.keras.models.load_model(self.h5file, custom_objects=custom_objects)
+            model = tf.keras.models.load_model(self.h5file, custom_objects=custom_objects, compile=False)
             print("Complete")
         
         return model
