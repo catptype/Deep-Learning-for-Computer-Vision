@@ -12,15 +12,19 @@ A personal repository documenting my deep learning self-study journey with pract
 This repository serves as a digital archive of my journey into deep learning. My primary focus is on practical implementations using TensorFlow and Keras. Through this self-study, I aim to gain a deeper understanding of deep learning concepts and techniques.
 
 ## Tools, Frameworks, and Libraries
+
 - **Language:**
   - Python 3.8.12
+
 - **Frameworks:**
   - TensorFlow 2.6.0
   - Keras
+
 - **Libraries:**
   - OpenCV
   - scikit-learn (sklearn)
   - NumPy
+  - JSON
 
 ## Model Implementation
 
