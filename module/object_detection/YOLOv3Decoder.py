@@ -4,6 +4,8 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from icecream import ic
+
 class Drawing:
 
     @staticmethod
@@ -31,18 +33,18 @@ class Drawing:
     @staticmethod
     def bounding_box(image, confidence_score, yxyx_box, class_name):
         # Extract box information
-        y_min, x_min, y_max, x_max = yxyx_box.numpy()
+        ymin, xmin, ymax, xmax = yxyx_box.numpy()
 
         # Boundary box setup
         color = (0, 255, 0)  # Green for the bounding box color
         thickness = 2
 
         # Draw boundary box
-        cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, thickness)
+        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), color, thickness)
 
         # Draw text with class name and confidence score
         text = f"{class_name} ({confidence_score:.2f})"
-        cv2.putText(image, text, (x_min, y_min - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness)
+        cv2.putText(image, text, (xmin, ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness)
 
     @staticmethod
     def highlight(image, xywh_box, row_size, col_size):
@@ -59,13 +61,13 @@ class Drawing:
         # Calculate grid coordinates
         cell_width = image_width // col_size
         cell_height = image_height // row_size
-        grid_x_min, grid_y_min = col * cell_width, row * cell_height
-        grid_x_max, grid_y_max = (col + 1) * cell_width, (row + 1) * cell_height
+        grid_xmin, grid_ymin = col * cell_width, row * cell_height
+        grid_xmax, grid_ymax = (col + 1) * cell_width, (row + 1) * cell_height
 
         # Draw grid bounding box
         color = (255, 0, 0)  # Red grid lines
         thickness = 1
-        cv2.rectangle(image, (grid_x_min, grid_y_min), (grid_x_max, grid_y_max), color, thickness)
+        cv2.rectangle(image, (grid_xmin, grid_ymin), (grid_xmax, grid_ymax), color, thickness)
 
         # Draw dots at x_center and y_center
         dot_radius = 2
@@ -95,14 +97,10 @@ class Calculator:
         pad_width = max(0, target_width - new_width)
         pad_height = max(0, target_height - new_height)
 
-        pad_width = pad_width // 2 # for both side
-        pad_height = pad_height // 2
+        pad_width = pad_width
+        pad_height = pad_height
 
-        # Normalize
-        pad_width_norm = pad_width / target_width
-        pad_height_norm = pad_height / target_height
-
-        return (pad_height_norm, pad_width_norm)
+        return (pad_height, pad_width)
     
 class FileIO:
     @staticmethod
@@ -115,6 +113,8 @@ class FileIO:
             preserve_aspect_ratio=True,
             antialias=True,
         )
+
+        ic(f"ImageResize {image.shape}")
 
         # Calculate padding size (top, bottom, left, right)
         padding = Calculator.padding(image, (height, width))
@@ -129,6 +129,8 @@ class FileIO:
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
         image = image.numpy().astype("uint8")
+
+        ic(f"ImageOriginal {image.shape}")
         return image
 
 class YOLOv3Decoder:
@@ -181,12 +183,12 @@ class YOLOv3Decoder:
         height = xywh_box[:, 3] * row_image
 
         # Convert from (x,y,w,h) to (y,x,y,x) format
-        x_min = x_center - width / 2
-        y_min = y_center - height / 2
-        x_max = x_center + width / 2
-        y_max = y_center + height / 2
+        xmin = x_center - width / 2
+        ymin = y_center - height / 2
+        xmax = x_center + width / 2
+        ymax = y_center + height / 2
 
-        yxyx_box = tf.stack([y_min, x_min, y_max, x_max], axis=-1)
+        yxyx_box = tf.stack([ymin, xmin, ymax, xmax], axis=-1)
         yxyx_box = tf.cast(yxyx_box, dtype=tf.int32)
 
         return yxyx_box
@@ -200,6 +202,10 @@ class YOLOv3Decoder:
 
         batch_size = small.shape[0]
 
+        image = np.clip(image, 0, 1)
+        image = (image * 255).astype("uint8")
+
+        plt.figure(figsize=(15,15))
         for batch_idx in range(batch_size):
 
             image_height, image_width = image.shape[:2]
@@ -240,16 +246,22 @@ class YOLOv3Decoder:
                     class_idx = tf.argmax(all_class[idx])
                     class_name = label_list[class_idx]
 
-                    y_min, x_min, y_max, x_max = all_box[idx].numpy()
-                    y_min /= image_height
-                    x_min /= image_width
-                    y_max /= image_height
-                    x_max /= image_width
+                    Drawing.bounding_box(image, confidence_score, all_box[idx], class_name)
+
+                    ymin, xmin, ymax, xmax = all_box[idx].numpy()
+                    ymin /= image_height
+                    xmin /= image_width
+                    ymax /= image_height
+                    xmax /= image_width
                     
-                    norm_box = tf.stack([y_min, x_min, y_max, x_max], axis=-1)
+                    norm_box = tf.stack([ymin, xmin, ymax, xmax], axis=-1)
                     norm_box = tf.cast(norm_box, dtype=tf.float32)
                     
                     detection_result.append((confidence_score, norm_box, class_name))
+            
+            plt.title("Detection result inside model", fontsize=20)
+            plt.imshow(image)                 
+            plt.axis("off")
 
         return detection_result
     
@@ -259,22 +271,39 @@ class YOLOv3Decoder:
         image_original = FileIO.image_reader(image_path)
         image_resize, padding = FileIO.image_preprocessing(image_path, model_height, model_width)
 
+        temp_image = tf.image.resize(
+            image_original / 255, 
+            (model_height, model_width),
+            preserve_aspect_ratio=True,
+            antialias=True,
+        )
+        temp_image = np.clip(temp_image, 0, 1)
+        temp_image = (temp_image * 255).astype("uint8")
+
         detection_list = self.__get_detection(image_resize, label_list)
 
-        image_height, image_width = image_original.shape[:2]
+        original_height, original_width = image_original.shape[:2]
         pad_height, pad_width = padding
+        pad_top = pad_height // 2
+        pad_left = pad_width // 2
 
         plt.figure(figsize=figsize)
         for detection in detection_list:
             confidence_score, box, class_name = detection
-            y_min, x_min, y_max, x_max = box.numpy()
+            ymin, xmin, ymax, xmax = box.numpy()
 
-            y_min = (y_min - pad_height) * image_height
-            x_min = (x_min - pad_width) * image_width
-            y_max = (y_max + pad_height) * image_height
-            x_max = (x_max + pad_width) * image_width
+            # Convert coordinate after remove padding
+            ymin = (ymin * model_height - pad_top) / (model_height - pad_height)
+            xmin = (xmin * model_width - pad_left) / (model_width - pad_width)
+            ymax = (ymax * model_height - pad_top) / (model_height - pad_height)
+            xmax = (xmax * model_width - pad_left) / (model_width - pad_width)
 
-            box = tf.stack([y_min, x_min, y_max, x_max], axis=-1)
+            ymin *= original_height
+            xmin *= original_width
+            ymax *= original_height
+            xmax *= original_width
+            
+            box = tf.stack([ymin, xmin, ymax, xmax], axis=-1)
             box = tf.cast(box, tf.int32)
             Drawing.bounding_box(image_original, confidence_score, box, class_name)
         
