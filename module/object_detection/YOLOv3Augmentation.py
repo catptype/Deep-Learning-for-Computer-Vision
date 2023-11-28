@@ -3,11 +3,26 @@ import random
 import numpy as np
 import tensorflow as tf
 
+from icecream import ic
+
 class YOLOv3Augmentation:
     def __init__(self, image_size, translate_range, rotation_range):
         self.__image_size = image_size
         self.__translate_range = translate_range
         self.__rotation_range = rotation_range
+
+    def __calculate_diff_area(self, old_box, new_box):
+        # Extract coordinates
+        old_xmin, old_ymin, old_xmax, old_ymax = old_box
+        new_xmin, new_ymin, new_xmax, new_ymax = new_box
+
+        # Calculate area of each box
+        area_old = (old_xmax - old_xmin) * (old_ymax - old_ymin)
+        area_new = (new_xmax - new_xmin) * (new_ymax - new_ymin)
+
+        # Calculate different
+        different = (area_new - area_old) / area_old
+        return different
 
     def __flip(self, image, annotation_list, flip_code):
         image = cv2.flip(image, flip_code)
@@ -75,17 +90,28 @@ class YOLOv3Augmentation:
         for annotation in annotation_list:
             for class_idx, xmin, ymin, xmax, ymax in [annotation]:
 
+                old_box = (xmin, ymin, xmax, ymax)
+
                 # Translate the bounding box coordinates
                 xmin += translation_x / image_width
                 xmax += translation_x / image_width
                 ymin += translation_y / image_height
                 ymax += translation_y / image_height
 
-                # Checking position
-                xmin = max(0, xmin)
-                xmax = min(1, xmax)
-                ymin = max(0, ymin)
-                ymax = min(1, ymax)
+                # Post processing
+                xmin = max(0.0, min(1.0, xmin))
+                ymin = max(0.0, min(1.0, ymin))
+                xmax = max(0.0, min(1.0, xmax))
+                ymax = max(0.0, min(1.0, ymax))
+
+                new_box = xmin, ymin, xmax, ymax
+                
+                # Calculate different size
+                diff = self.__calculate_diff_area(old_box, new_box)
+                
+                # Discard this box if size change for -20%
+                if diff < -0.2:
+                    continue
                 
                 # Create a new annotation tuple
                 new_annotation = (class_idx, xmin, ymin, xmax, ymax)
@@ -114,6 +140,8 @@ class YOLOv3Augmentation:
         for annotation in annotation_list:
             for class_idx, xmin, ymin, xmax, ymax in [annotation]:
 
+                old_box = (xmin, ymin, xmax, ymax)
+
                 # Convert normalized bounding box coordinates to pixel coordinates
                 xmin *= image_width
                 ymin *= image_height
@@ -139,6 +167,21 @@ class YOLOv3Augmentation:
                 rotated_xmax = max(rotated_box[:, 0]) / image_width
                 rotated_ymax = max(rotated_box[:, 1]) / image_height
 
+                # Post processing
+                rotated_xmin = max(0.0, min(1.0, rotated_xmin))
+                rotated_ymin = max(0.0, min(1.0, rotated_ymin))
+                rotated_xmax = max(0.0, min(1.0, rotated_xmax))
+                rotated_ymax = max(0.0, min(1.0, rotated_ymax))
+
+                new_box = rotated_xmin, rotated_ymin, rotated_xmax, rotated_ymax
+                
+                # Calculate different size
+                diff = self.__calculate_diff_area(old_box, new_box)
+                
+                # Discard this box if size change for -10%
+                if diff < -0.1:
+                    continue
+                
                 # Create a new annotation tuple
                 new_annotation = (class_idx, rotated_xmin, rotated_ymin, rotated_xmax, rotated_ymax)
                 updated_annotation_list.append(new_annotation)
