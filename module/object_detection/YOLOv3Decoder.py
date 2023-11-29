@@ -1,10 +1,8 @@
-import math
 import cv2
+import math
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-
-from icecream import ic
 
 class Drawing:
 
@@ -114,8 +112,6 @@ class FileIO:
             antialias=True,
         )
 
-        ic(f"ImageResize {image.shape}")
-
         # Calculate padding size (top, bottom, left, right)
         padding = Calculator.padding(image, (height, width))
 
@@ -129,8 +125,6 @@ class FileIO:
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
         image = image.numpy().astype("uint8")
-
-        ic(f"ImageOriginal {image.shape}")
         return image
 
 class YOLOv3Decoder:
@@ -205,7 +199,6 @@ class YOLOv3Decoder:
         image = np.clip(image, 0, 1)
         image = (image * 255).astype("uint8")
 
-        plt.figure(figsize=(15,15))
         for batch_idx in range(batch_size):
 
             image_height, image_width = image.shape[:2]
@@ -246,8 +239,6 @@ class YOLOv3Decoder:
                     class_idx = tf.argmax(all_class[idx])
                     class_name = label_list[class_idx]
 
-                    Drawing.bounding_box(image, confidence_score, all_box[idx], class_name)
-
                     ymin, xmin, ymax, xmax = all_box[idx].numpy()
                     ymin /= image_height
                     xmin /= image_width
@@ -258,10 +249,6 @@ class YOLOv3Decoder:
                     norm_box = tf.cast(norm_box, dtype=tf.float32)
                     
                     detection_result.append((confidence_score, norm_box, class_name))
-            
-            plt.title("Detection result inside model", fontsize=20)
-            plt.imshow(image)                 
-            plt.axis("off")
 
         return detection_result
     
