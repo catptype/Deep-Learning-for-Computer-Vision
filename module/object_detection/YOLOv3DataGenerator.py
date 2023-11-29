@@ -4,6 +4,27 @@ import xml.etree.ElementTree as ET
 from .YOLOv3Augmentation import YOLOv3Augmentation
 from .YOLOv3Anchor import YOLOv3Anchor as anchor_module
 
+class ErrorHandler:
+    
+    @staticmethod
+    def validate_input(input):
+        if not isinstance(input, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in input):
+            raise ValueError("Invalid input format")
+
+    @staticmethod
+    def validate_image_size(image_size):
+        is_valid_tuple = isinstance(image_size, tuple) and len(image_size) == 2 and all(isinstance(dim, int) for dim in image_size)
+        is_valid_int = isinstance(image_size, int)
+        if not (is_valid_int or is_valid_tuple):
+            raise ValueError("Invalid image_size. It should be an integer tuple (width, height) or an integer number")
+
+    @staticmethod
+    def validate_translation(translate_range):
+        is_valid_tuple = isinstance(translate_range, tuple) and len(translate_range) == 2
+        is_valid_float = isinstance(translate_range, float)
+        if not (is_valid_tuple or is_valid_float or translate_range is None):
+            raise ValueError("Invalid translation format. It should be a tuple (x, y) or a float.")
+        
 class YOLOv3DataGenerator:
     def __init__(
         self, 
@@ -17,9 +38,9 @@ class YOLOv3DataGenerator:
         rotation_range=None,
     ):  
         # Error handler
-        self.__validate_input(input)
-        self.__validate_image_size(image_size)
-        self.__validate_translation(translate_range)
+        ErrorHandler.validate_input(input)
+        ErrorHandler.validate_image_size(image_size)
+        ErrorHandler.validate_translation(translate_range)
 
         # Private artibute    
         self.__input = input
@@ -32,22 +53,6 @@ class YOLOv3DataGenerator:
         self.__rotation_range = rotation_range
         
     # Private methods
-    def __validate_input(self, input):
-        if not isinstance(input, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in input):
-            raise ValueError("Invalid input format")
-
-    def __validate_image_size(self, image_size):
-        is_valid_tuple = isinstance(image_size, tuple) and len(image_size) == 2 and all(isinstance(dim, int) for dim in image_size)
-        is_valid_int = isinstance(image_size, int)
-        if not (is_valid_int or is_valid_tuple):
-            raise ValueError("Invalid image_size. It should be an integer tuple (width, height) or an integer number")
-
-    def __validate_translation(self, translate_range):
-        is_valid_tuple = isinstance(translate_range, tuple) and len(translate_range) == 2
-        is_valid_float = isinstance(translate_range, float)
-        if not (is_valid_tuple or is_valid_float or translate_range is None):
-            raise ValueError("Invalid translation format. It should be a tuple (x, y) or a float.")
-        
     def __image_reader_tf(self, image_path):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_image(image, expand_animations=False)
