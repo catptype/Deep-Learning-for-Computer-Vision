@@ -82,21 +82,16 @@ class Calculator:
         aspect_ratio = original_width / original_height
 
         # Determine whether to resize based on width or height
-        if target_width / aspect_ratio <= target_width:
-            # Resize based on width
+        if target_width / aspect_ratio <= target_width: # Resize based on width
             new_width = target_width
             new_height = int(target_width / aspect_ratio)
-        else:
-            # Resize based on height
+        else: # Resize based on height
             new_width = int(target_height * aspect_ratio)
             new_height = target_height
 
         # Calculate padding for both width and height
         pad_width = max(0, target_width - new_width)
         pad_height = max(0, target_height - new_height)
-
-        pad_width = pad_width
-        pad_height = pad_height
 
         return (pad_height, pad_width)
     
@@ -167,27 +162,6 @@ class YOLOv3Decoder:
         class_prob = tensor[..., 5:]
         return confidence_score, box_coordinate, class_prob
     
-    def __xywh2yxyx(self, xywh_box, row_size, col_size):
-        _, row_image, col_image, _ = self.model.input.shape
-        
-        # Convert box information from grid coordinates to image coordinates
-        x_center = xywh_box[:, 0] * col_image / col_size
-        y_center = xywh_box[:, 1] * row_image / row_size
-        width  = xywh_box[:, 2] * col_image
-        height = xywh_box[:, 3] * row_image
-
-        # Convert from (x,y,w,h) to (y,x,y,x) format
-        xmin = x_center - width / 2
-        ymin = y_center - height / 2
-        xmax = x_center + width / 2
-        ymax = y_center + height / 2
-
-        yxyx_box = tf.stack([ymin, xmin, ymax, xmax], axis=-1)
-        yxyx_box = tf.cast(yxyx_box, dtype=tf.int32)
-
-        return yxyx_box
-    
-    # Public method
     def __get_detection(self, image, label_list):
         detection_result = []
         # Predic result
@@ -251,21 +225,33 @@ class YOLOv3Decoder:
                     detection_result.append((confidence_score, norm_box, class_name))
 
         return detection_result
-    
+
+    def __xywh2yxyx(self, xywh_box, row_size, col_size):
+        _, row_image, col_image, _ = self.model.input.shape
+        
+        # Convert box information from grid coordinates to image coordinates
+        x_center = xywh_box[:, 0] * col_image / col_size
+        y_center = xywh_box[:, 1] * row_image / row_size
+        width  = xywh_box[:, 2] * col_image
+        height = xywh_box[:, 3] * row_image
+
+        # Convert from (x,y,w,h) to (y,x,y,x) format
+        xmin = x_center - width / 2
+        ymin = y_center - height / 2
+        xmax = x_center + width / 2
+        ymax = y_center + height / 2
+
+        yxyx_box = tf.stack([ymin, xmin, ymax, xmax], axis=-1)
+        yxyx_box = tf.cast(yxyx_box, dtype=tf.int32)
+
+        return yxyx_box
+        
+    # Public method
     def show_detection(self, image_path, label_list, figsize=(5,5)):
         _, model_height, model_width, _ = self.model.input.shape
 
         image_original = FileIO.image_reader(image_path)
         image_resize, padding = FileIO.image_preprocessing(image_path, model_height, model_width)
-
-        temp_image = tf.image.resize(
-            image_original / 255, 
-            (model_height, model_width),
-            preserve_aspect_ratio=True,
-            antialias=True,
-        )
-        temp_image = np.clip(temp_image, 0, 1)
-        temp_image = (temp_image * 255).astype("uint8")
 
         detection_list = self.__get_detection(image_resize, label_list)
 
