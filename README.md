@@ -72,24 +72,28 @@ This repository serves as a digital archive of my journey into deep learning. My
 ## Other Implementation
 
 ### Data Generators
-| Data Generators            | Code Link         |
+| Data Generators           | Code Link         |
 |---------------------------|-------------------|
 | Image data generator for image classifcation | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/image_classification) |
 | Image data generator for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/object_detection) |
 
 ### Evaluation Metrics
-| Metrics            | Code Link         |
+| Metrics                   | Code Link         |
 |---------------------------|-------------------|
 | Confusion matrix | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/evaluate/ConfusionMatrix.py) |
 | F1 score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py) |
 | Mean Average Precision (mAP) for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py) |
 
-### Applications and Utilities
-| Applications / Utilities  | Code Link         |
+### Utilities
+| Utilities                 | Code Link         |
 |---------------------------|-------------------|
 | Directory processor | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/DirectoryProcessor.py) |
-| Image organizer based on class prediction | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageOrganizer.py) |
-| Image similarity retrieval | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageSimilarity.py) |
-| Image feature vector DB generator (JSON format) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageFeatureExtractor.py) |
 | Text-based progress bar | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/TextProgressBar.py) |
 
+### Applications 
+| Applications              | Links         |
+|---------------------------|-------------------|
+| Image organizer based on class prediction | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageOrganizer.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Organzier.ipynb)|
+| Image similarity retrieval | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageSimilarity.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
+| Image feature vector DB generator (JSON format) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageFeatureExtractor.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
+| Manga Dialogue Detection with OCR | [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Manga%20Dialogue%20Detection%20with%20OCR.ipynb) |
