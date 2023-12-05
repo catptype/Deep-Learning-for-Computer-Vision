@@ -3,6 +3,7 @@ import math
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from PIL import Image
 
 class Drawing:
 
@@ -139,7 +140,8 @@ class YOLOv3Decoder:
         # Check for invalid boxes and update raw confidence score = -3
         tensor_np = tensor.numpy()
         invalid_boxes = np.any((tensor_np[..., 1:5] < 0) | (tensor_np[..., 1:5] > 1), axis=-1)
-        tensor_np[invalid_boxes, 0] = -3 # Sigmoid(-3) = 0.04
+        small_boxes = np.any((tensor_np[..., 3:5] < 0.05), axis=-1)
+        tensor_np[invalid_boxes | small_boxes, 0] = -3 # Sigmoid(-3) = 0.04
 
         # Update x_center and y_center to determine the grid coordinate containing the object
         if batch:
@@ -283,3 +285,41 @@ class YOLOv3Decoder:
         plt.title("Detection result", fontsize=20)
         plt.imshow(image_original)                 
         plt.axis("off")
+    
+    def extract_detection(self, image_path, label_list):
+        _, model_height, model_width, _ = self.model.input.shape
+
+        image_original = FileIO.image_reader(image_path)
+        image_resize, padding = FileIO.image_preprocessing(image_path, model_height, model_width)
+
+        detection_list = self.__get_detection(image_resize, label_list)
+
+        original_height, original_width = image_original.shape[:2]
+        pad_height, pad_width = padding
+        pad_top = pad_height // 2
+        pad_left = pad_width // 2
+
+        extract_result = []
+        for detection in detection_list:
+            _, box, _ = detection
+            ymin, xmin, ymax, xmax = box.numpy()
+
+            # Convert coordinate after remove padding
+            ymin = (ymin * model_height - pad_top) / (model_height - pad_height)
+            xmin = (xmin * model_width - pad_left) / (model_width - pad_width)
+            ymax = (ymax * model_height - pad_top) / (model_height - pad_height)
+            xmax = (xmax * model_width - pad_left) / (model_width - pad_width)
+
+            ymin *= original_height
+            xmin *= original_width
+            ymax *= original_height
+            xmax *= original_width
+
+            box = tf.stack([xmin, ymin, xmax, ymax], axis=-1)
+            box = tf.cast(box, tf.int32)
+
+            cropped_img = Image.fromarray(image_original).crop(box.numpy())
+            extract_result.append(cropped_img)
+
+        return extract_result
+            
