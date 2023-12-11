@@ -16,21 +16,25 @@ from .DeepLearningModel import DeepLearningModel
 
 class ResNeXtModel(DeepLearningModel):
     """
-    Base class for ResNeXt architectures.
+    Custom model implementing the ResNeXt architecture.
 
-    This class serves as the base for implementing various ResNeXt architectures.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int): The input image size.
-        num_class (int): The number of output classes for classification.
+        image_size (int): Size of the input images (assumed to be square).
+        num_class (int): Number of classes for classification.
 
     Methods:
-        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-            Apply a convolutional block with optional skip connection.
-        Resnext_block(input, num_feature, cardinality=32, downsampler=False):
-            Create a ResNeXt block with optional downsampling.
-        Resnext_bottleneck(input, num_feature, cardinality=32, downsampler=False):
-            Create a ResNeXt bottleneck block with optional downsampling.
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None): Build a block with Conv2D, Batch Normalization, ReLU activation, and optional skip connection.
+        Resnext_block(input, num_feature, cardinality=32, downsampler=False): Build a ResNeXt block with multiple paths.
+        Resnext_bottleneck(input, num_feature, cardinality=32, downsampler=False): Build a ResNeXt bottleneck block with multiple paths.
+
+    Subclasses:
+        - ResNeXt18
+        - ResNeXt34
+        - ResNeXt50
+        - ResNeXt101
+        - ResNeXt152
     """
     def __init__(self, image_size, num_class):
         self.image_size = image_size
@@ -38,20 +42,6 @@ class ResNeXtModel(DeepLearningModel):
         super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-        """
-        Create a convolutional block with optional skip connection.
-
-        Parameters:
-            input: Input tensor for the convolutional block.
-            num_feature (int): The number of output feature maps.
-            kernel (int, optional): The kernel size for convolution. Default is 3.
-            strides (int, optional): The convolutional stride. Default is 1.
-            use_skip (bool, optional): Whether to use a skip connection. Default is False.
-            identity: The identity tensor for the skip connection.
-
-        Returns:
-            TensorFlow tensor representing the output of the convolutional block.
-        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         if use_skip:
@@ -62,18 +52,6 @@ class ResNeXtModel(DeepLearningModel):
         return x
 
     def Resnext_block(self, input, num_feature, cardinality=32, downsampler=False):
-        """
-        Create a ResNeXt block with optional downsampling.
-
-        Parameters:
-            input: Input tensor for the ResNeXt block.
-            num_feature (int): The number of output feature maps.
-            cardinality (int, optional): The number of groups. Default is 32.
-            downsampler (bool, optional): Whether to include downsampling layers. Default is False.
-
-        Returns:
-            TensorFlow tensor representing the output of the ResNeXt block.
-        """
         identity = input
         if downsampler:
             identity = MaxPooling2D()(identity)
@@ -99,18 +77,6 @@ class ResNeXtModel(DeepLearningModel):
         return x
 
     def Resnext_bottleneck(self, input, num_feature, cardinality=32, downsampler=False):
-        """
-        Create a ResNeXt bottleneck block with optional downsampling.
-
-        Parameters:
-            input: Input tensor for the ResNeXt bottleneck block.
-            num_feature (int): The number of output feature maps.
-            cardinality (int, optional): The number of groups. Default is 32.
-            downsampler (bool, optional): Whether to include downsampling layers. Default is False.
-
-        Returns:
-            TensorFlow tensor representing the output of the ResNeXt bottleneck block.
-        """
         # Calculate the number of filters for each group
         feature_per_group = num_feature // cardinality
 
@@ -135,17 +101,21 @@ class ResNeXtModel(DeepLearningModel):
 
 class ResNeXt18(ResNeXtModel):
     """
-    Implementation of the ResNeXt-18 architecture.
+    Subclass of ResNeXtModel with specific configuration.
+
+    Inherits from ResNeXtModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNeXt18 model
+        model = ResNeXt18(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNeXt-18 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -185,17 +155,21 @@ class ResNeXt18(ResNeXtModel):
 
 class ResNeXt34(ResNeXtModel):
     """
-    Implementation of the ResNeXt-34 architecture.
+    Subclass of ResNeXtModel with specific configuration.
+
+    Inherits from ResNeXtModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNeXt34 model
+        model = ResNeXt34(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNeXt-34 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -235,17 +209,21 @@ class ResNeXt34(ResNeXtModel):
 
 class ResNeXt50(ResNeXtModel):
     """
-    Implementation of the ResNeXt-50 architecture.
+    Subclass of ResNeXtModel with specific configuration.
+
+    Inherits from ResNeXtModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNeXt50 model
+        model = ResNeXt50(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNeXt-50 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -285,17 +263,21 @@ class ResNeXt50(ResNeXtModel):
 
 class ResNeXt101(ResNeXtModel):
     """
-    Implementation of the ResNeXt-101 architecture.
+    Subclass of ResNeXtModel with specific configuration.
+
+    Inherits from ResNeXtModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNeXt101 model
+        model = ResNeXt101(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNeXt-101 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -335,17 +317,21 @@ class ResNeXt101(ResNeXtModel):
 
 class ResNeXt152(ResNeXtModel):
     """
-    Implementation of the ResNeXt-152 architecture.
+    Subclass of ResNeXtModel with specific configuration.
+
+    Inherits from ResNeXtModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNeXt152 model
+        model = ResNeXt152(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNeXt-152 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer

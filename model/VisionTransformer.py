@@ -1,10 +1,7 @@
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
-    Dense,
-    Input,
-    LayerNormalization,
-)
 import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Input, LayerNormalization
+
 from .transformer_module.ClassToken import ClassToken
 from .transformer_module.ImagePatcher import ImagePatcher
 from .transformer_module.PatchEncoder import PatchEncoder
@@ -14,19 +11,40 @@ from .DeepLearningModel import DeepLearningModel
 
 class VisionTransformer(DeepLearningModel):
     """
-    Vision Transformer (ViT).
+    Custom model implementing the Vision Transformer (ViT) architecture.
 
-    This model consists of multiple TransformerEncoder blocks to process image patches and classify images.
+    Inherits from DeepLearningModel.
 
-    Args:
-        image_size (int): The size of the input image (height and width) in pixels.
-        patch_size (int): The size of each square image patch in pixels.
-        num_class (int): The number of output classes for classification.
-        num_head (int): The number of attention heads in the multi-head self-attention mechanism.
-        latent_size (int): The size of the latent space for the encoder.
-        num_transformer (int): The number of TransformerEncoder layers in the model.
-        mlp_size (int): The size of the feedforward neural network hidden layer.
+    Parameters:
+        image_size (int): Size of the input images (assumed to be square).
+        patch_size (int): Size of the image patches.
+        num_class (int): Number of classes for classification.
+        num_head (int): Number of attention heads in the transformer.
+        latent_size (int): Size of the latent vectors in the transformer.
+        num_transformer (int): Number of transformer blocks in the architecture.
+        mlp_size (int): Size of the Multi-Layer Perceptron (MLP) in the transformer.
 
+    Methods:
+        build_model(): Build the Vision Transformer model.
+
+    Subclasses:
+        - ViTBase
+        - ViTLarge
+        - ViTHuge
+
+    Example:
+        ```python
+        # Example usage to create a VisionTransformer model
+        model = VisionTransformer(
+            image_size=224, 
+            patch_size=16, 
+            num_class=10, 
+            num_head=12, 
+            latent_size=768,     
+            num_transformer=12,        
+            mlp_size=3072,
+        )    
+        ```
     """
     def __init__(
         self,
@@ -54,7 +72,6 @@ class VisionTransformer(DeepLearningModel):
         super().__init__()
 
     def build_model(self):
-        # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 
         # Image patcher
@@ -81,19 +98,17 @@ class VisionTransformer(DeepLearningModel):
 
 class ViTBase(VisionTransformer):
     """
-    ViTBase is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+    Subclass of VisionTransformer with specific configuration.
 
-    Args:
-        image_size (int): The size of the input images.
-        patch_size (int): The size of image patches for self-attention.
-        num_class (int): The number of output classes for classification.
+    Inherits from VisionTransformer.
 
-    Fixed Hyperparameters:
-        num_head (int): Number of self-attention heads (Fixed to 12).
-        latent_size (int): Dimensionality of latent space (Fixed to 768).
-        num_transformer (int): Number of encoder layers (Fixed to 12).
-        mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 3072).
+    Example:
+        ```python
+        # Example usage to create a ViTBase model
+        model = ViTBase(image_size=224, patch_size=16, num_class=10)
+        ```
 
+    Note: Inherits parameters from VisionTransformer.
     """
     def __init__(self, image_size, patch_size, num_class):
         super().__init__(
@@ -109,19 +124,17 @@ class ViTBase(VisionTransformer):
 
 class ViTLarge(VisionTransformer):
     """
-    ViTLarge is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+    Subclass of VisionTransformer with specific configuration.
 
-    Args:
-        image_size (int): The size of the input images.
-        patch_size (int): The size of image patches for self-attention.
-        num_class (int): The number of output classes for classification.
+    Inherits from VisionTransformer.
 
-    Fixed Hyperparameters:
-        num_head (int): Number of self-attention heads (Fixed to 16).
-        latent_size (int): Dimensionality of latent space (Fixed to 1024).
-        num_transformer (int): Number of encoder layers (Fixed to 24).
-        mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 4096).
-        
+    Example:
+        ```python
+        # Example usage to create a ViTLarge model
+        model = ViTLarge(image_size=224, patch_size=16, num_class=10)
+        ```
+
+    Note: Inherits parameters from VisionTransformer.
     """
     def __init__(self, image_size, patch_size, num_class):
         super().__init__(
@@ -135,21 +148,19 @@ class ViTLarge(VisionTransformer):
         )
 
 
-class ViTHuge(VisionTransformer):
+class ViTHuge(VisionTransformer):   
     """
-    ViTHuge is a variant of the Vision Transformer (ViT) architecture with customizable input size and number of classes.
+    Subclass of VisionTransformer with specific configuration.
 
-    Args:
-        image_size (int): The size of the input images.
-        patch_size (int): The size of image patches for self-attention.
-        num_class (int): The number of output classes for classification.
+    Inherits from VisionTransformer.
 
-    Fixed Hyperparameters:
-        num_head (int): Number of self-attention heads (Fixed to 16).
-        latent_size (int): Dimensionality of latent space (Fixed to 1280).
-        num_transformer (int): Number of encoder layers (Fixed to 32).
-        mlp_size (int): Size of the feedforward neural network in each layer (Fixed to 5120).
-        
+    Example:
+        ```python
+        # Example usage to create a ViTHuge model
+        model = ViTHuge(image_size=224, patch_size=16, num_class=10)
+        ```
+
+    Note: Inherits parameters from VisionTransformer.
     """
     def __init__(self, image_size, patch_size, num_class):
         super().__init__(

@@ -3,30 +3,32 @@ from tensorflow.keras.layers import Layer
 
 class ImagePatcher(Layer):
     """
-    The ImagePatcher layer.
+    Custom layer to patch an input image into non-overlapping patches.
 
-    This layer extracts patches from an input image tensor. These patches are
-    used as the input to a Vision Transformer model.
+    Inherits from tf.keras.layers.Layer.
 
-    Args:
-        patch_size (int): The size of each square patch to be extracted from the input image.
+    Parameters:
+        patch_size (int): Size of the square patches.
+        **kwargs: Additional keyword arguments to be passed to the base class.
 
+    Methods:
+        call(input): Apply the layer to the input tensor, extracting non-overlapping patches.
+        get_config(): Get the configuration of the layer.
+        from_config(cls, config): Create an instance of the layer from a configuration dictionary.
+
+    Example:
+        ```python
+        # Example usage in functional API
+        # ... (previous layers)
+        patches = ImagePatcher(patch_size=16)(previous_layer)
+        # ... (add other layers)
+        ```
     """
     def __init__(self, patch_size, **kwargs):
         super(ImagePatcher, self).__init__(name="Image_Patcher")
         self.patch_size = patch_size
     
     def call(self, input):
-        """
-        Extracts patches from an input image tensor.
-
-        Args:
-            input (tf.Tensor): The input image tensor from which patches will be extracted.
-
-        Returns:
-            tf.Tensor: A tensor containing extracted patches from the input image. The shape
-                of the returned tensor will be (batch_size, num_patches, patch_size * patch_size * channels).
-        """
         image_patch = tf.image.extract_patches(
             images=input,
             sizes=[1, self.patch_size, self.patch_size, 1],

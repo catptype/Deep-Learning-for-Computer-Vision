@@ -18,21 +18,24 @@ from .CBAM_Module import CBAM_Module
 
 class Res2NetModel(DeepLearningModel):
     """
-    Base class for Res2Net architectures.
+    Custom model implementing the Res2Net architecture.
 
-    This class serves as the base for implementing various Res2Net architectures.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int): The input image size.
-        num_class (int): The number of output classes for classification.
-        scale (int): The scale factor used to divide and merge feature maps within the Res2Net block.
-        module (str): The attention module to enhance the Res2Net architecture. Options include 'se' (Squeeze-and-Excitation) or 'cbam' (Convolutional Block Attention Module).
+        image_size (int): Size of the input images (assumed to be square).
+        num_class (int): Number of classes for classification.
+        scale (int): Scale factor for the Res2Net architecture.
+        module (str): Module type to enhance Res2Net blocks. Choose from ['se', 'cbam'].
 
     Methods:
-        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-            Apply a convolutional block with optional skip connection.
-        Residual_bottleneck(input, num_feature):
-            Create a Res2Net residual bottleneck block with the specified number of feature maps.
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None): Build a block with Conv2D, Batch Normalization, ReLU activation, and optional downsampling.
+        Residual_bottleneck(input, num_feature): Build a Residual Bottleneck block in the Res2Net model.
+
+    Subclasses:
+        - Res2Net50
+        - Res2Net101
+        - Res2Net152
     """
     def __init__(self, image_size, num_class, scale, module):
         if module is not None and module not in ['se', 'cbam']:
@@ -45,20 +48,6 @@ class Res2NetModel(DeepLearningModel):
         super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-        """
-        Apply a convolutional block with optional skip connection.
-
-        Parameters:
-            input: Input tensor for the convolutional block.
-            num_feature (int): The number of output feature maps.
-            kernel (int, optional): The kernel size for convolution. Default is 3.
-            strides (int, optional): The convolutional stride. Default is 1.
-            use_skip (bool, optional): Whether to use a skip connection. Default is False.
-            identity: The identity tensor for the skip connection.
-
-        Returns:
-            TensorFlow tensor representing the output of the convolutional block.
-        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         if use_skip:
@@ -69,16 +58,6 @@ class Res2NetModel(DeepLearningModel):
         return x
     
     def Residual_bottleneck(self, input, num_feature):
-        """
-        Create a Res2Net residual bottleneck block with the specified number of feature maps.
-
-        Parameters:
-            input: Input tensor for the Res2Net block.
-            num_feature (int): The number of output feature maps.
-
-        Returns:
-            TensorFlow tensor representing the output of the Res2Net residual bottleneck block.
-        """
         module_output = []
 
         x = self.Conv2D_block(input, num_feature)
@@ -117,19 +96,23 @@ class Res2NetModel(DeepLearningModel):
 
 class Res2Net50(Res2NetModel):
     """
-    Implementation of Res2Net-50 architecture.
+    Subclass of Res2NetModel with specific configuration.
+
+    Inherits from Res2NetModel.
+
+    Example:
+        ```python
+        # Example usage to create a Res2Net50 model
+        model = Res2Net50(image_size=224, num_class=10, scale=4, module='se')
+        ```
     """
     def __init__(self, image_size, num_class, scale=4, module=None):
-        """
-        Initializes the Res2Net-50 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            scale (int): The scale factor for the model.
-            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
-        """
-        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class, 
+            scale=scale, 
+            module=module,
+        )
 
     def build_model(self):
         # Input layer
@@ -172,19 +155,23 @@ class Res2Net50(Res2NetModel):
 
 class Res2Net101(Res2NetModel):
     """
-    Implementation of Res2Net-101 architecture.
+    Subclass of Res2NetModel with specific configuration.
+
+    Inherits from Res2NetModel.
+
+    Example:
+        ```python
+        # Example usage to create a Res2Net101 model
+        model = Res2Net101(image_size=224, num_class=10, scale=4, module='se')
+        ```
     """
     def __init__(self, image_size, num_class, scale=4, module=None):
-        """
-        Initializes the Res2Net-101 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            scale (int): The scale factor for the model.
-            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
-        """
-        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class, 
+            scale=scale, 
+            module=module,
+        )
 
     def build_model(self):
         # Input layer
@@ -227,19 +214,23 @@ class Res2Net101(Res2NetModel):
 
 class Res2Net152(Res2NetModel):
     """
-    Implementation of Res2Net-152 architecture.
+    Subclass of Res2NetModel with specific configuration.
+
+    Inherits from Res2NetModel.
+
+    Example:
+        ```python
+        # Example usage to create a Res2Net152 model
+        model = Res2Net152(image_size=224, num_class=10, scale=4, module='se')
+        ```
     """
     def __init__(self, image_size, num_class, scale=4, module=None):
-        """
-        Initializes the Res2Net-152 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            scale (int): The scale factor for the model.
-            module (str): The optional module type ('se' for Squeeze-and-Excitation, 'cbam' for CBAM).
-        """
-        super().__init__(image_size=image_size, num_class=num_class, scale=scale, module=module)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class, 
+            scale=scale, 
+            module=module,
+        )
 
     def build_model(self):
         # Input layer

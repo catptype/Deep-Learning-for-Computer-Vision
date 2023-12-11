@@ -8,16 +8,29 @@ from tensorflow.keras.layers import (
 
 class TransformerEncoder(Layer):
     """
-    TransformerEncoder layer.
+    Custom layer implementing a Transformer Encoder block.
 
-    This layer represents one encoder block of a Vision Transformer, which consists of
-    multi-head self-attention and feedforward neural networks.
+    Inherits from tf.keras.layers.Layer.
 
-    Args:
-        num_head (int): The number of attention heads in the multi-head self-attention mechanism.
-        latent_size (int): The size of the latent space for the encoder.
-        mlp_size (int): The size of the feedforward neural network hidden layer.
+    Parameters:
+        num_head (int): Number of attention heads.
+        latent_size (int): Size of the latent space.
+        mlp_size (int): Size of the feedforward layer.
+        **kwargs: Additional keyword arguments to be passed to the base class.
 
+    Methods:
+        build(input_shape): Build the layer by initializing the necessary components.
+        call(input): Apply the layer to the input tensor, performing self-attention and feedforward operations.
+        get_config(): Get the configuration of the layer.
+        from_config(cls, config): Create an instance of the layer from a configuration dictionary.
+
+    Example:
+        ```python
+        # Example usage in functional API
+        # ... (previous layers)
+        x = TransformerEncoder(num_head=8, latent_size=256, mlp_size=512)(previous_layer)
+        # ... (add other layers)
+        ```
     """
     num_instances = 0
 
@@ -30,13 +43,6 @@ class TransformerEncoder(Layer):
         self.mlp_size = mlp_size
 
     def build(self, input_shape):
-        """
-        Builds the TransformerEncoder layer by initializing its sublayers.
-
-        Args:
-            input_shape (tuple): The shape of the input tensor.
-
-        """
         self.layer_norm1 = LayerNormalization(epsilon=1e-6)
         self.layer_norm2 = LayerNormalization(epsilon=1e-6)
         self.multi_head = MultiHeadAttention(self.num_head, self.latent_size // self.num_head)
@@ -45,15 +51,6 @@ class TransformerEncoder(Layer):
         super().build(input_shape)
 
     def call(self, input):
-        """
-        Applies the TransformerEncoder layer to the input tensor.
-
-        Args:
-            input (tf.Tensor): The input tensor to be processed by the encoder.
-
-        Returns:
-            tf.Tensor: The output tensor after passing through the encoder block.
-        """
         x1 = self.layer_norm1(input)
         x1 = self.multi_head(x1, x1)
         x1 = Add()([x1, input])

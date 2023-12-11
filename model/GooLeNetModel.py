@@ -17,23 +17,22 @@ from .DeepLearningModel import DeepLearningModel
 
 class GooLeNetModel(DeepLearningModel):
     """
-    Base class for GooLeNet or Inception v1 architectures.
+    Custom model implementing the GooLeNet architecture.
 
-    This class serves as the base for implementing various Inception v1 architectures.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int): The size of the input image, e.g., 224 for a 224x224 image.
-        num_class (int): The number of output classes for classification.
-
+        image_size (int): Size of the input images (assumed to be square).
+        num_class (int): Number of classes for classification.
+    
     Methods:
-        Conv2D_block(input, num_feature, kernel=3, strides=1, use_bn=False):
-            Create a Conv2D block with options for batch normalization.
-
-        init_block(input, use_bn=False):
-            Create the initial block of the GoogLeNet model.
-
-        inception_module(input, num_feature_list, use_bn=False, downsampler=False):
-            Create an Inception module with optional batch normalization.
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_bn=False): Build a block with Conv2D, Batch Normalization, ReLU activation, and optional downsampling.
+        init_block(input, use_bn=False): Build the initial block of the GooLeNet model.
+        inception_module(input, num_feature_list, use_bn=False, downsampler=False): Build an Inception module in the GooLeNet model.
+    
+    Subclasses:
+        - Inception_v1
+        - Inception_v1_BN
     """
     def __init__(self, image_size, num_class):
         self.image_size = image_size
@@ -41,19 +40,6 @@ class GooLeNetModel(DeepLearningModel):
         super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_bn=False):
-        """
-        Create a Conv2D block with optional batch normalization.
-
-        Parameters:
-            input: Input tensor for the Conv2D block.
-            num_feature (int): The number of output features.
-            kernel (int): The kernel size for the convolution.
-            strides (int): The stride for the convolution.
-            use_bn (bool): Whether to apply batch normalization.
-
-        Returns:
-            TensorFlow tensor representing the output of the Conv2D block.
-        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         if use_bn:
             x = BatchNormalization()(x)
@@ -61,16 +47,6 @@ class GooLeNetModel(DeepLearningModel):
         return x
 
     def init_block(self, input, use_bn=False):
-        """
-        Create the initial block of the GoogLeNet model.
-
-        Parameters:
-            input: Input tensor for the initial block.
-            use_bn (bool): Whether to apply batch normalization.
-
-        Returns:
-            TensorFlow tensor representing the output of the initial block.
-        """
         x = self.Conv2D_block(input, 64, kernel=7, strides=2, use_bn=use_bn)
         x = MaxPooling2D((3, 3), strides=2, padding="same")(x)
 
@@ -80,18 +56,6 @@ class GooLeNetModel(DeepLearningModel):
         return x
 
     def inception_module(self, input, num_feature_list, use_bn=False, downsampler=False):
-        """
-        Create an Inception module with optional batch normalization.
-
-        Parameters:
-            input: Input tensor for the Inception module.
-            num_feature_list (list): A list of six integers specifying the number of features for each path.
-            use_bn (bool): Whether to apply batch normalization.
-            downsampler (bool): Whether the module acts as a downsampler.
-
-        Returns:
-            TensorFlow tensor representing the output of the Inception module.
-        """
         if len(num_feature_list) != 6:
             raise ValueError(f"num feature must contain 6 numbers: len = {len(num_feature_list)}")
 
@@ -116,17 +80,23 @@ class GooLeNetModel(DeepLearningModel):
 
 class Inception_v1(GooLeNetModel):
     """
-    Implementation of the original Inception v1 architecture.
+    Subclass of GooLeNetModel implementing the Inception_v1 architecture.
+
+    Inherits from GooLeNetModel.
+
+    Example:
+        ```python
+        # Example usage to create an Inception_v1 model
+        model = Inception_v1(image_size=224, num_class=10)
+        ```
+
+    Note: Inherits parameters and methods from GooLeNetModel.
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the Inception v1 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -167,17 +137,24 @@ class Inception_v1(GooLeNetModel):
 
 class Inception_v1_BN(GooLeNetModel):
     """
-    Implementation of Inception v1 architecture with Batch Normalization.
+    Subclass of GooLeNetModel implementing the Inception_v1 architecture with Batch Normalization.
+
+    Inherits from GooLeNetModel.
+
+    Example:
+        ```python
+        # Example usage to create an Inception_v1_BN model
+        model = Inception_v1_BN(image_size=224, num_class=10)
+        ```
+
+    Note: Inherits parameters and methods from GooLeNetModel.
     """
+    
     def __init__(self, image_size, num_class):
-        """
-        Initializes the Inception v1 model with Batch Normalization.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer

@@ -2,27 +2,29 @@ import tensorflow as tf
 
 class YOLOLoss(tf.keras.losses.Loss):
     """
-    Custom YOLOv3 Loss Function for object detection models.
+    Custom loss function for YOLO (You Only Look Once) object detection models.
 
-    This loss function computes the YOLOv3 loss, which is used in training YOLO-based object detection models.
-
-    Args:
-        lambda_coord (float): Weight for the box coordinate loss.
-        lambda_noobj (float): Weight for the no-object confidence loss.
+    Parameters:
+        lambda_coord (float): Coefficient for the bounding box coordinates loss. Default is 5.0.
+        lambda_noobj (float): Coefficient for the no-object confidence loss. Default is 0.5.
 
     Attributes:
-        lambda_coord (float): Weight for the box coordinate loss.
-        lambda_noobj (float): Weight for the no-object confidence loss.
+        lambda_coord (float): Coefficient for the bounding box coordinates loss.
+        lambda_noobj (float): Coefficient for the no-object confidence loss.
         bce (tf.keras.losses.BinaryCrossentropy): Binary cross-entropy loss function.
         mse (tf.keras.losses.MeanSquaredError): Mean squared error loss function.
         cce (tf.keras.losses.CategoricalCrossentropy): Categorical cross-entropy loss function.
 
     Methods:
-        __decoder(tensor):
-            Decode the input tensor into object confidence, box coordinates, and class probabilities.
-        call(y_true, y_pred):
-            Compute the YOLOv3 loss based on true and predicted values.
-    
+        __decoder(tensor): Decode the YOLO tensor into object confidence, box coordinates, and class probabilities.
+        call(y_true, y_pred): Compute the YOLO loss based on the true and predicted values.
+
+    Example:
+        ```python
+        # Example usage
+        yolo_loss = YOLOLoss(lambda_coord=7.0, lambda_noobj=0.2)
+        model.compile(optimizer='adam', loss=yolo_loss)
+        ```
     """
     def __init__(self, lambda_coord=5.0, lambda_noobj=0.5):
         super(YOLOLoss, self).__init__()

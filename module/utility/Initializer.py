@@ -2,7 +2,25 @@ import sys
 import tensorflow as tf
 
 class Initializer:
+    """
+    Utility class for initializing TensorFlow settings.
 
+    Methods:
+        mixed_precision16(): Sets the global policy for mixed precision to "mixed_float16".
+        memory_growth(): Enables GPU memory growth for all available GPUs.
+        set_gpu_memory_limit(MB=1024): Sets a specific memory limit (in megabytes) for GPU(s) and disables memory growth.
+        show_version(): Displays the versions of TensorFlow and Python.
+
+    Example:
+        ```python
+        # Example usage of Initializer class
+        Initializer.mixed_precision16()
+        Initializer.memory_growth()
+        Initializer.set_gpu_memory_limit(MB=2048)
+        Initializer.show_version()
+        ```
+
+    """
     @staticmethod
     def mixed_precision16():
         tf.keras.mixed_precision.set_global_policy("mixed_float16")

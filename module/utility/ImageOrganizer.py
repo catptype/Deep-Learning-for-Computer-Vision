@@ -5,17 +5,36 @@ from tensorflow.keras.models import load_model
 from .DirectoryProcessor import DirectoryProcessor
 
 class ImageOrganizer:
+    """
+    Utility class for organizing images into labeled directories based on a classification model.
 
+    Parameters:
+        h5_file (str): Path to the pre-trained Keras model file in HDF5 format.
+        target_dir (str): Directory containing images to be classified and organized.
+        batch_size (int): Batch size for image processing (default is 8).
+        threshold_score (float): Threshold score for classifying images (default is 0.9).
+
+    Attributes:
+        model (tf.keras.Model): Loaded Keras model for image classification.
+        target_dir (str): Directory containing images to be classified and organized.
+        batch_size (int): Batch size for image processing.
+        threshold_score (float): Threshold score for classifying images.
+
+    Public Methods:
+        image_classify(label_list=None): Classifies and organizes images based on the pre-trained model.
+
+    Private Methods:
+        __image_resize(image_path): Reads and resizes an image to the required input shape for the classification model.
+        __predict(image_path): Performs class prediction on a batch of images and post-processes the results.
+
+    Example:
+        ```python
+        # Example usage of ImageOrganizer class
+        organizer = ImageOrganizer(h5_file="model.h5", target_dir="images_to_classify", batch_size=16, threshold_score=0.8)
+        organizer.image_classify(label_list=["cat", "dog", "bird"])
+        ```
+    """
     def __init__(self, h5_file, target_dir, batch_size=8, threshold_score=0.9):
-        """
-        Initializes an Image Organizer for classifying and organizing images.
-
-        Args:
-            h5_file (str): The file path to the trained model in HDF5 format for image classification.
-            target_dir (str): The directory containing the images to be classified and organized.
-            batch_size (int, optional): The batch size used for image processing. Defaults to 8.
-            threshold_score (float, optional): The threshold score for classifying images. Images with scores below this threshold will be classified as "UNKNOWN". Defaults to 0.9.
-        """
         print("Loading model ... ", end="")
         self.model = load_model(h5_file)
         self.target_dir = target_dir
@@ -76,12 +95,6 @@ class ImageOrganizer:
 
     # Public method
     def image_classify(self, label_list=None):
-        """
-        Classify and organize images based on their predicted classes.
-
-        Args:
-            label_list (list, optional): A list of class labels for post-processing. If provided, the labels will be used for organizing the images into subdirectories. Defaults to None.
-        """
         if label_list is not None:
             label_list.append("UNKNOWN")
 

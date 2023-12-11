@@ -14,26 +14,29 @@ from .DeepLearningModel import DeepLearningModel
 
 class YOLOv3(DeepLearningModel):
     """
-    YOLOv3: You Only Look Once Version 3.
+    Custom model implementing the YOLOv3 (You Only Look One-level) architecture for object detection.
 
-    This class defines the YOLOv3 deep learning model for object detection.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int or tuple): The input image size as an integer for square images
-            or a tuple (width, height) for non-square images.
-        num_anchor (int): The number of anchor boxes used for object detection.
-        num_class (int): The number of output classes for object detection.
+        image_size (int): Size of the input images (assumed to be square). 
+        num_anchor (int): Number of anchor boxes for YOLO predictions.
+        num_class (int): Number of classes for object detection.
+
+    Methods:
+        conv2D_block(input, num_feature, kernel=3, strides=1, upsampling=False): Defines a convolutional block with optional upsampling.
+        conv2D_unit(input, num_feature): Defines a sequence of convolutional blocks.
+        res_unit(input, num_feature): Defines a residual unit.
+        scale_prediction(input, num_feature, name=None): Scales predictions to match the number of anchor boxes and classes.
+        build_model(): Build the YOLOv3 model.
+
+    Example:
+        ```python
+        # Example usage to create a YOLOv3 model
+        model = YOLOv3(image_size=320, num_anchor=3, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_anchor, num_class):
-        """
-        Initialize the YOLOv3 model with the specified parameters.
-
-        Parameters:
-            image_size (int or tuple): The input image size as an integer for square images
-                or a tuple (width, height) for non-square images.
-            num_anchor (int): The number of anchor boxes used for object detection.
-            num_class (int): The number of output classes for object detection.
-        """
         self.image_size = image_size
         self.num_class = num_class
         self.num_anchor = num_anchor
@@ -47,18 +50,18 @@ class YOLOv3(DeepLearningModel):
             x = UpSampling2D()(x)
         return x
 
-    def res_unit(self, input, num_feature):
-        x = self.conv2D_block(input, num_feature // 2, kernel=1)
-        x = self.conv2D_block(x, num_feature, kernel=3)
-        x = Add()([input, x])
-        return x
-    
     def conv2D_unit(self, input, num_feature):
         x = self.conv2D_block(input, num_feature // 2, kernel=1)
         x = self.conv2D_block(x, num_feature)
         x = self.conv2D_block(x, num_feature // 2, kernel=1)
         x = self.conv2D_block(x, num_feature)
         x = self.conv2D_block(x, num_feature // 2, kernel=1)
+        return x
+    
+    def res_unit(self, input, num_feature):
+        x = self.conv2D_block(input, num_feature // 2, kernel=1)
+        x = self.conv2D_block(x, num_feature, kernel=3)
+        x = Add()([input, x])
         return x
     
     def scale_prediction(self, input, num_feature, name=None):
@@ -69,18 +72,7 @@ class YOLOv3(DeepLearningModel):
         return x
         
     def build_model(self):
-        # Input layer
-        if isinstance(self.image_size, tuple) and len(self.image_size) == 2:
-            input = Input(shape=(self.image_size[1], self.image_size[0], 3), name="Input_image")
-            model_name = f"YOLOv3_{self.image_size[0]}x{self.image_size[1]}_a{self.num_anchor}_{self.num_class}Class"
-        
-        elif isinstance(self.image_size, int):
-            input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
-            model_name = f"YOLOv3_{self.image_size}x{self.image_size}_a{self.num_anchor}_{self.num_class}Class"
-        
-        else:
-            raise ValueError("Invalid image_size. It should be a tuple (width, height) or integer.")
-
+        input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
         # Darknet 53
         # Stage 0
         x = self.conv2D_block(input, 32)
@@ -126,5 +118,6 @@ class YOLOv3(DeepLearningModel):
         yolo_L = self.scale_prediction(x, 256, name="large")
         
         # Output
+        model_name = f"YOLOv3_{self.image_size}x{self.image_size}_a{self.num_anchor}_{self.num_class}Class"
         model = Model(inputs=[input], outputs=[yolo_S, yolo_M, yolo_L], name=model_name)
         return model

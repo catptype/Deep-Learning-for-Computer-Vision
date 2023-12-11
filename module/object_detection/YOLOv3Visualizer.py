@@ -3,6 +3,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class YOLOv3Visualizer:
+    """
+    Utility class for visualizing image datasets.
+
+    Parameters:
+        class_mapping (list or None): A list mapping class indices to class names. If None, class indices are used.
+
+    Attributes:
+        class_mapping (list or None): A list mapping class indices to class names.
+
+    Public Method:
+        display_batch(self, dataset, figsize=(10, 10), show_grid=False, show_highlight=False): Displays a batch of images with YOLOv3 model detection results.
+
+    Private Methods:
+        __draw_grid(self, image, row_grid_size, col_grid_size): Draws a grid on the input image.
+        __draw_highlight(self, image, x_center, y_center, grid_info): Highlights a grid cell and its center on the input image.
+        __draw_bounding_box(self, image, bounding_box, grid_info): Draws a bounding box on the input image.
+
+    Example:
+        ```python
+        # Example usage of YOLOv3Visualizer class
+        visualizer = YOLOv3Visualizer(class_mapping=["cat", "dog"])
+        visualizer.display_batch(dataset, figsize=(10, 10), show_grid=True, show_highlight=True)
+        ```
+
+    Note: This class provides methods for visualizing YOLOv3 model output, including drawing bounding boxes, grids, and highlights on images.
+    """
     def __init__(self, class_mapping=None):
         self.class_mapping = class_mapping
     
@@ -132,5 +158,4 @@ class YOLOv3Visualizer:
                     plt.imshow(image_with_boxes)                    
                     plt.title(title)
                     plt.axis("off")
-
         plt.show()

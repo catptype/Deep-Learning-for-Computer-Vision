@@ -2,37 +2,34 @@ import time
 
 class TextProgressBar():
     """
-    A simple text-based progress bar for tracking the progress of a task.
+    Simple text-based progress bar for tracking the progress of a process.
+
+    Parameters:
+        total_step (int): Total number of steps in the process.
+        length (int): Length of the progress bar (default is 40).
+        time_delay (float): Time delay in seconds for updating the progress bar (default is 0.1).
 
     Attributes:
-        total_step (int): The total number of steps in the task.
-        length (int): The length of the progress bar.
-        time_delay (float): The time delay between updates.
-    
+        total_step (int): Total number of steps in the process.
+        length (int): Length of the progress bar.
+        time_delay (float): Time delay in seconds for updating the progress bar.
+        cur_step (int): Current step in the process.
+        start_time (float): Time when the progress bar was initiated.
+        prev_time (float): Time of the previous progress bar update.
+
     Methods:
-        add_step(num): Add a specified number of steps to the progress bar.
+        add_step(num): Adds a specified number of steps to the progress bar.
 
     Example:
-        To create a progress bar for a task with 100 steps, you can use the following code:
-
         ```python
-        progress = TextProgressBar(total_step=100)
-        for step in range(100):
-            # Perform a step of the task
-            # ...
-            progress.add_step(1)
+        # Example usage of TextProgressBar class
+        progress_bar = TextProgressBar(total_step=100, length=50, time_delay=0.05)
+        for _ in range(100):
+            progress_bar.add_step(1)
         ```
-
-    Note:
-        This progress bar does not handle multi-threading or multiprocessing scenarios.
     """
     def __init__(self, total_step, length=40, time_delay=0.1):
-        """
-        Args:
-            total_step (int): The total number of steps in the task.
-            length (int): The length of the progress bar in characters (default is 40).
-            time_delay (float): The time delay (in seconds) between updates (default is 0.1).
-        """
+
         if not isinstance(total_step, int):
             raise ValueError("total_step must be an integer")
         self.total_step = total_step
@@ -73,18 +70,5 @@ class TextProgressBar():
     
     # Public method
     def add_step(self, num):
-        """
-        Add a specified number of steps to the progress bar.
-
-        Args:
-            num (int): The number of steps to add.
-
-        Example:
-            To add 5 steps to the progress bar, you can use the following code:
-
-            ```python
-            progress.add_step(5)
-            ```
-        """
         self.__cur_step += num
         self.__print_progress_bar()

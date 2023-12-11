@@ -1,11 +1,19 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import xml.etree.ElementTree as ET
+
 from .YOLOv3Augmentation import YOLOv3Augmentation
 from .YOLOv3Anchor import YOLOv3Anchor as anchor_module
 
 class ErrorHandler:
-    
+    """
+    Utility class for handling errors and input validation in YOLOv3DataGenerator.
+
+    Methods:
+        validate_input(input): Validates the input format for YOLOv3DataGenerator.
+        validate_image_size(image_size): Validates the image_size parameter format for YOLOv3DataGenerator.
+        validate_translation(translate_range): Validates the translate_range parameter format for YOLOv3DataGenerator.
+    """
     @staticmethod
     def validate_input(input):
         if not isinstance(input, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in input):
@@ -26,6 +34,46 @@ class ErrorHandler:
             raise ValueError("Invalid translation format. It should be a tuple (x, y) or a float.")
         
 class YOLOv3DataGenerator:
+    """
+    Data generator for YOLOv3 model training.
+
+    Parameters:
+        input (list): List of tuples containing image paths and corresponding XML paths.
+        label_list (list): List of class labels.
+        image_size (int or tuple): Target size of the augmented image (height, width).
+        num_anchor (int): Number of anchor boxes.
+        horizontal_flip (bool): Flag for horizontal flip augmentation.
+        vertical_flip (bool): Flag for vertical flip augmentation.
+        translate_range (float or tuple): Range for random translation.
+        rotation_range (float): Maximum rotation angle for random rotation.
+
+    Attributes:
+        __input (list): List of tuples containing image paths and corresponding XML paths.
+        __label_list (list): List of class labels.
+        __image_size (tuple): Target size of the augmented image (height, width).
+        __num_anchor (int): Number of anchor boxes.
+        __horizontal_flip (bool): Flag for horizontal flip augmentation.
+        __vertical_flip (bool): Flag for vertical flip augmentation.
+        __translate_range (float or tuple): Range for random translation.
+        __rotation_range (float): Maximum rotation angle for random rotation.
+        __anchor_boxes (numpy.ndarray): Calculated anchor boxes based on input annotations.
+
+    Public Methods:
+        generate_dataset(batch_size, drop_reminder=False): Generates a TensorFlow dataset for YOLOv3 model training.
+
+    Private Methods:
+        __image_reader_tf(image_path): Reads and preprocesses an image using TensorFlow.
+        __xml_reader(xml_path): Reads and parses XML annotations for an image.
+        __generate_annotation_label(annotation_list): Generates annotation labels for YOLOv3 based on the provided annotations.
+        __preprocessing(image_path, xml_path): Preprocesses an image and its corresponding XML annotations for YOLOv3 training.
+
+    Example:
+        ```python
+        # Example usage of YOLOv3DataGenerator class
+        data_generator = YOLOv3DataGenerator(input=input_list, label_list=class_labels, image_size=416, num_anchor=9)
+        train_dataset = data_generator.generate_dataset(batch_size=32)
+        ```
+    """
     def __init__(
         self, 
         input,

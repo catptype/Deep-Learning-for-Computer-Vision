@@ -5,34 +5,32 @@ import tensorflow as tf
 
 class ImageAugmentation:
     """
-    A class for performing image augmentation operations such as horizontal and vertical flips,
-    translation, rotation, and padding.
-
-    Attributes:
-        image_size (tuple): The target size for the augmented image (width, height).
-        translate_range (float, tuple): The translation range for both horizontal and vertical directions.
-            If a float, it represents a normalized range. If a tuple, it specifies the range for x and y separately.
-        rotation_range (int): The maximum rotation angle for image rotation.
-        border_method (str): The method used for image border handling. Should be 'constant' or 'replicate'.
+    Class for performing image augmentation operations such as horizontal and vertical flips, translations, rotations, and padding.
 
     Methods:
-        horizontal_flip(image): Perform horizontal flip on the image with a given probability.
-        vertical_flip(image): Perform vertical flip on the image with a given probability.
-        translation(image): Apply random translation to the image within the specified range.
-        rotation(image): Rotate the image by a random angle within the specified range.
-        padding(image): Pad the image to match the target size with a specified border handling method.
+        horizontal_flip(image): Applies horizontal flip with a 50% probability.
+        vertical_flip(image): Applies vertical flip with a 50% probability.
+        translation(image): Applies random translation within the specified range.
+        rotation(image): Applies random rotation within the specified range.
+        padding(image): Pads the image to the specified target size.
+
+    Example:
+        ```python
+        # Example usage of image augmentation
+        augmenter = ImageAugmentation(
+            image_size=(224, 224),
+            translate_range=(0.1, 0.1),
+            rotation_range=20,
+            border_method="constant"
+        )
+
+        augmented_image = augmenter.translation(original_image)
+        ```
+
+    Note: All methods return a TensorFlow tensor, and the class supports both constant and replicate
+    border methods during image transformations.
     """
     def __init__(self, image_size, translate_range, rotation_range, border_method):
-        """
-        Initializes the ImageAugmentation instance with specified parameters.
-
-        Parameters:
-            image_size (tuple): The target size for the augmented image (width, height).
-            translate_range (float, tuple): The translation range for both horizontal and vertical directions.
-                If a float, it represents a normalized range. If a tuple, it specifies the range for x and y separately.
-            rotation_range (int): The maximum rotation angle for image rotation.
-            border_method (str): The method used for image border handling. Should be 'constant' or 'replicate'.
-        """
         self.__image_size = image_size
         self.__translate_range = translate_range
         self.__rotation_range = rotation_range

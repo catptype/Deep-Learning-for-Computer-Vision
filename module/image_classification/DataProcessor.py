@@ -4,26 +4,27 @@ from collections import Counter
 
 class DataProcessor:
     """
-    A class for data processing tasks, such as balancing data, creating label dictionaries,
-    splitting data into training and testing sets, and calculating class weights.
+    Utility class for processing dataset.
 
     Methods:
-        balance_data(data_list): Balance the provided data by randomly selecting the same number of samples for each class.
-        create_label_dict(label_list, mode): Create a label dictionary mapping class labels to one-hot vectors or indices.
-        validation_spliter(data_list, label_set, ratio): Split data into training and testing sets according to the specified ratio.
-        calculate_class_weight(train_dataset): Calculate class weights for use in imbalanced datasets.
+        balance_data(data_list):
+            Balances the provided data list by randomly selecting the minimum occurrences
+            of each class and creating a new balanced data list.
+
+        create_label_dict(label_list, mode):
+            Creates a dictionary mapping labels to either one-hot vectors or integer indices.
+
+        validation_spliter(data_list, label_set, ratio):
+            Splits the data into training and testing sets based on the given ratio for each class.
+
+        calculate_class_weight(train_dataset):
+            Calculates class weights for imbalanced datasets.
+
+    Note: All methods are static and do not require an instance of the class.
     """
+
     @staticmethod
     def balance_data(data_list):
-        """
-        Balance the provided data by randomly selecting the same number of samples for each class.
-
-        Parameters:
-            data_list (list): A list of data samples where each sample is a tuple (data, label).
-
-        Returns:
-            list: A balanced list of data samples.
-        """
         # Count the occurrences of each class and find the minimum number
         label_list = [label for _, label in data_list]
         label_set = sorted(set(label_list))
@@ -41,16 +42,6 @@ class DataProcessor:
 
     @staticmethod
     def create_label_dict(label_list, mode):
-        """
-        Create a label dictionary mapping class labels to one-hot vectors or indices.
-
-        Parameters:
-            label_list (list): A list of unique class labels.
-            mode (str): The mode for creating label dictionaries, either 'onehot' or 'index'.
-
-        Returns:
-            dict: A dictionary mapping class labels to one-hot vectors or indices.
-        """
         if mode not in ["onehot", "index"]:
             raise ValueError("mode must be 'onehot' or 'index'")
         
@@ -65,17 +56,6 @@ class DataProcessor:
     
     @staticmethod
     def validation_spliter(data_list, label_set, ratio):
-        """
-        Split data into training and testing sets according to the specified ratio.
-
-        Parameters:
-            data_list (list): A list of data samples where each sample is a tuple (data, label).
-            label_set (list): A list of unique class labels.
-            ratio (float): The ratio of samples to be used for testing (e.g., 0.2 for 20% testing).
-
-        Returns:
-            tuple: A tuple containing the training data list and the testing data list.
-        """
         train_data, test_data = [], []
         
         for label_current in label_set:
@@ -94,15 +74,6 @@ class DataProcessor:
     
     @staticmethod
     def calculate_class_weight(train_dataset):
-        """
-        Calculate class weights for use in imbalanced datasets.
-
-        Parameters:
-            train_dataset (list): A list of training data samples where each sample is a tuple (data, label).
-
-        Returns:
-            dict: A dictionary mapping class labels to their calculated class weights.
-        """
         label_count = Counter(label for _, label in train_dataset)
         total = sum(label_count.values())
         num_class = len(label_count)

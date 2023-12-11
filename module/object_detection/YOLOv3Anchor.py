@@ -2,7 +2,17 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 class YOLOv3Anchor:
-    
+    """
+    Utility class for YOLOv3 anchor box calculations.
+
+    Methods:
+        find_best_anchor(width, height, anchor_list): Finds the best anchor box index for a given bounding box size.
+        calculate_anchor(num_anchor, annotation_list): Calculates anchor boxes using k-means clustering based on annotation bounding box sizes.
+
+    Note: This class provides methods for finding the best anchor box for a given bounding box size and
+    calculating anchor boxes using k-means clustering based on annotation bounding box sizes.
+    """
+
     @staticmethod
     def find_best_anchor(width, height, anchor_list):
         best_iou = 0

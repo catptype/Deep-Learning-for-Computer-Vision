@@ -6,16 +6,29 @@ from tensorflow.keras.models import load_model
 
 class GranCAM:
     """
-    Class for generating Gradient-weighted Class Activation Maps (Grad-CAM) for a given model and image.
-    Note: Incompatible with models using mixed precision float16.
+    Class for generating Grad-CAM (Gradient-weighted Class Activation Mapping) heatmaps for a given model.
+
+    Parameters:
+        model (str): The model for generating Grad-CAM heatmaps. It must be an HDF5 file containing the model.
+
+    Attributes:
+        model (tf.keras.Model): The pretrained model used for generating Grad-CAM heatmaps.
+
+    Public Methods:
+        generate_heatmap(image, class_index=None, overlay=False): Generate a Grad-CAM heatmap for a given image.
+
+    Private Methods:
+        __build_model(model): Build the model for Grad-CAM, preserving only the convolutional layers.
+        __get_epsilon(): Compute the machine epsilon for numerical stability.
+
+    Example:
+        ```python
+        # Example usage
+        cam = GranCAM("model.h5")
+        heatmap = cam.generate_heatmap(image, class_index=282, overlay=True)
+        ```
     """
     def __init__(self, model):
-        """
-        Initializes the GranCAM instance.
-
-        Parameters:
-            model (str or tf.keras.Model): The pre-trained model or the path to a saved model (.h5).
-        """
         self.model = self.__build_model(model)
     
     # Private methods
@@ -43,16 +56,15 @@ class GranCAM:
     # Public methods
     def generate_heatmap(self, image, class_index=None, overlay=False):
         """
-        Generates the Gradient-weighted Class Activation Map (Grad-CAM) for a given image.
+        Generate a Grad-CAM heatmap for a given image.
 
         Parameters:
-            image (np.ndarray): The input image as a NumPy array.
-            class_index (int): The index of the class for which the heatmap is generated.
-                              If None, the class with the highest predicted probability is used.
-            overlay (bool): If True, overlays the heatmap on the original image.
+            image (tf.Tensor): The input image for which to generate the heatmap.
+            class_index (int): The index of the target class. If None, the class with the highest probability is used.
+            overlay (bool): Whether to overlay the heatmap on the original image. Default is False.
 
         Returns:
-            np.ndarray: The generated heatmap or the overlayed image, depending on the 'overlay' parameter.
+            np.ndarray: The Grad-CAM heatmap.
         """
         # Get original image size for resizing heatmap
         width = image.shape[0]

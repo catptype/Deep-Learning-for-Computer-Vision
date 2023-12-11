@@ -15,21 +15,25 @@ from .DeepLearningModel import DeepLearningModel
 
 class ResnetModel(DeepLearningModel):
     """
-    Base class for ResNet architectures.
+    Custom model implementing the ResNet architecture.
 
-    This class serves as the base for implementing various ResNet architectures.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int): The input image size.
-        num_class (int): The number of output classes for classification.
+        image_size (int): Size of the input images (assumed to be square).
+        num_class (int): Number of classes for classification.
 
     Methods:
-        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-            Apply a convolutional block with optional skip connection.
-        Residual_block(input, num_feature, downsampler=False):
-            Create a residual block with optional downsampling.
-        Residual_bottleneck(input, num_feature, downsampler=False):
-            Create a residual bottleneck block with optional downsampling.
+        Conv2D_block(input, num_feature, kernel=3, strides=1, use_skip=False, identity=None): Build a block with Conv2D, Batch Normalization, ReLU activation, and optional downsampling.
+        Residual_block(input, num_feature, downsampler=False): Build a Residual block in the ResNet model.
+        Residual_bottleneck(input, num_feature, downsampler=False): Build a Residual Bottleneck block in the ResNet model.
+
+    Subclasses:
+        - Resnet18
+        - Resnet34
+        - Resnet50
+        - Resnet101
+        - Resnet152
     """
     def __init__(self, image_size, num_class):
         self.image_size = image_size
@@ -37,20 +41,6 @@ class ResnetModel(DeepLearningModel):
         super().__init__()
 
     def Conv2D_block(self, input, num_feature, kernel=3, strides=1, use_skip=False, identity=None):
-        """
-        Apply a convolutional block with optional skip connection.
-
-        Parameters:
-            input: Input tensor for the convolutional block.
-            num_feature (int): The number of output feature maps.
-            kernel (int, optional): The kernel size for convolution. Default is 3.
-            strides (int, optional): The convolutional stride. Default is 1.
-            use_skip (bool, optional): Whether to use a skip connection. Default is False.
-            identity: The identity tensor for the skip connection.
-
-        Returns:
-            TensorFlow tensor representing the output of the convolutional block.
-        """
         x = Conv2D(num_feature, (kernel, kernel), strides=strides, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         if use_skip:
@@ -61,17 +51,6 @@ class ResnetModel(DeepLearningModel):
         return x
 
     def Residual_block(self, input, num_feature, downsampler=False):
-        """
-        Create a residual block with optional downsampling.
-
-        Parameters:
-            input: Input tensor for the residual block.
-            num_feature (int): The number of output feature maps.
-            downsampler (bool, optional): Whether to include downsampling layers. Default is False.
-
-        Returns:
-            TensorFlow tensor representing the output of the residual block.
-        """
         if downsampler:
             x = self.Conv2D_block(input, num_feature, strides=2)
             x = self.Conv2D_block(x, num_feature, use_skip=True, identity=MaxPooling2D()(input))
@@ -81,17 +60,6 @@ class ResnetModel(DeepLearningModel):
         return x
 
     def Residual_bottleneck(self, input, num_feature, downsampler=False):
-        """
-        Create a residual bottleneck block with optional downsampling.
-
-        Parameters:
-            input: Input tensor for the residual bottleneck block.
-            num_feature (int): The number of output feature maps.
-            downsampler (bool, optional): Whether to include downsampling layers. Default is False.
-
-        Returns:
-            TensorFlow tensor representing the output of the residual bottleneck block.
-        """
         x = self.Conv2D_block(input, num_feature, kernel=1)
         if downsampler:
             x = self.Conv2D_block(x, num_feature, strides=2)
@@ -104,17 +72,21 @@ class ResnetModel(DeepLearningModel):
 
 class Resnet18(ResnetModel):
     """
-    Implementation of the ResNet-18 architecture.
+    Subclass of ResnetModel with specific configuration.
+
+    Inherits from ResnetModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNet18 model
+        model = Resnet18(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNet-18 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -154,17 +126,21 @@ class Resnet18(ResnetModel):
 
 class Resnet34(ResnetModel):
     """
-    Implementation of the ResNet-34 architecture.
+    Subclass of ResnetModel with specific configuration.
+
+    Inherits from ResnetModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNet34 model
+        model = Resnet34(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNet-34 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -204,17 +180,21 @@ class Resnet34(ResnetModel):
 
 class Resnet50(ResnetModel):
     """
-    Implementation of the ResNet-50 architecture.
+    Subclass of ResnetModel with specific configuration.
+
+    Inherits from ResnetModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNet50 model
+        model = Resnet50(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNet-50 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -254,17 +234,21 @@ class Resnet50(ResnetModel):
 
 class Resnet101(ResnetModel):
     """
-    Implementation of the ResNet-101 architecture.
+    Subclass of ResnetModel with specific configuration.
+
+    Inherits from ResnetModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNet101 model
+        model = Resnet101(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNet-101 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer
@@ -304,17 +288,21 @@ class Resnet101(ResnetModel):
 
 class Resnet152(ResnetModel):
     """
-    Implementation of the ResNet-152 architecture.
+    Subclass of ResnetModel with specific configuration.
+
+    Inherits from ResnetModel.
+
+    Example:
+        ```python
+        # Example usage to create a ResNet152 model
+        model = Resnet152(image_size=224, num_class=10)
+        ```
     """
     def __init__(self, image_size, num_class):
-        """
-        Initializes the ResNet-152 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-        """
-        super().__init__(image_size=image_size, num_class=num_class)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class,
+        )
 
     def build_model(self):
         # Input layer

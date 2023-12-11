@@ -6,6 +6,16 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 class Drawing:
+    """
+    Utility class for drawing grid lines, bounding boxes, and highlights on images.
+
+    Methods:
+        grid(image, row_grid_size, col_grid_size): Draws a grid on the image.
+        bounding_box(image, confidence_score, yxyx_box, class_name): Draws a bounding box with class name and confidence score on the image.
+        highlight(image, xywh_box, row_size, col_size): Highlights a region on the image based on the input bounding box.
+
+    Note: All methods are static and do not require an instance of the class.
+    """
 
     @staticmethod
     def grid(image, row_grid_size, col_grid_size):
@@ -75,6 +85,13 @@ class Drawing:
         cv2.circle(image, (x_center_pixel, y_center_pixel), dot_radius, dot_color, -1)
 
 class Calculator:
+    """
+    Utility class for calculating padding during image processing.
+
+    Methods:
+        padding(image, target_resolution): Calculates padding for resizing an image to the target resolution.
+    """
+
     @staticmethod
     def padding(image, target_resolution):
         # Calculate the aspect ratio of the original image
@@ -97,6 +114,14 @@ class Calculator:
         return (pad_height, pad_width)
     
 class FileIO:
+    """
+    Utility class for image preprocessing and reading images from files.
+
+    Methods:
+        image_preprocessing(image_path, height, width): Reads and preprocesses an image from the specified path.
+        image_reader(image_path): Reads an image from the specified path.
+    """
+
     @staticmethod
     def image_preprocessing(image_path, height, width):
         image = tf.io.read_file(image_path)
@@ -124,6 +149,36 @@ class FileIO:
         return image
 
 class YOLOv3Decoder:
+    """
+    Utility class for decoding YOLOv3 model output.
+
+    Parameters:
+        h5file (str): Path to the saved YOLOv3 Keras model file.
+        confidence_threshold (float): Confidence threshold for considering a detection.
+        max_output (int): Maximum number of output detections to consider (default is 100).
+        nms_iou (float): IoU (Intersection over Union) threshold for non-maximum suppression (default is 0.5).
+        nms_confidence (float): Confidence threshold for non-maximum suppression (default is 0.2).
+
+    Attributes:
+        model (tf.keras.models.Model): Loaded YOLOv3 model.
+        confidence_threshold (float): Confidence threshold for considering a detection.
+        max_output (int): Maximum number of output detections to consider.
+        nms_iou (float): IoU threshold for non-maximum suppression.
+        nms_confidence (float): Confidence threshold for non-maximum suppression.
+
+    Public Methods:
+        __init__(self, h5file, confidence_threshold, max_output=100, nms_iou=0.5, nms_confidence=0.2): Initializes the YOLOv3Decoder with the model file and parameters.
+        show_detection(self, image_path, label_list, figsize=(5, 5)): Displays the image with YOLOv3 model detection results.
+        extract_detection(self, image_path, label_list): Extracts and returns the detected regions from the image.
+
+    Private Methods:
+        __decoder(self, tensor, batch=True): Decodes the YOLOv3 model output tensor.
+        __get_detection(self, image, label_list): Performs object detection on the input image.
+        __xywh2yxyx(self, xywh_box, row_size, col_size): Converts bounding box coordinates from (xcenter, ycenter, width, height) format to (ymin, xmin, ymax, xmax).
+    
+    Note: This class provides methods for decoding YOLOv3 model output, displaying detection results, and
+    extracting detected regions from images.
+    """
 
     def __init__(self, h5file, confidence_threshold, max_output=100, nms_iou=0.5, nms_confidence=0.2):
         print("Loading model ... ", end="")
@@ -322,4 +377,3 @@ class YOLOv3Decoder:
             extract_result.append(cropped_img)
 
         return extract_result
-            

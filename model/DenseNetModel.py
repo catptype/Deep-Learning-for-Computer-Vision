@@ -16,21 +16,26 @@ from .DeepLearningModel import DeepLearningModel
 
 class DenseNetModel(DeepLearningModel):
     """
-    Base class for DenseNet architectures.
+    Custom model implementing a DenseNet architecture.
 
-    This class serves as the base for implementing various DenseNet architectures.
+    Inherits from DeepLearningModel.
 
     Parameters:
-        image_size (int): The input image size.
-        num_class (int): The number of output classes for classification.
-        growth_rate (int): The growth rate of the DenseNet model.
-
+        image_size (int): Size of the input images (assumed to be square).
+        num_class (int): Number of classes for classification.
+        growth_rate (int): Growth rate controlling the number of filters in the DenseNet model.
+    
     Methods:
-        init_block(input): Create an initial block of the DenseNet model.
-        BN_ReLU_Conv(input, num_feature, kernel=3): Apply a BN-ReLU-Conv layer with specified parameters.
-        Dense_block(input, num_feature, num_layer): Create a dense block with the given number of layers.
-        Transit_block(input): Create a transition block to reduce spatial dimensions.
+        init_block(input): Build the initial block of the DenseNet model.
+        BN_ReLU_Conv(input, num_feature, kernel=3): Build a block with Batch Normalization, ReLU activation, and 3x3 Convolution.        
+        Dense_block(input, num_feature, num_layer): Build a dense block in the DenseNet model.
+        Transit_block(input): Build a transition block in the DenseNet model.
 
+    Subclasses:
+        - DenseNet121
+        - DenseNet169
+        - DenseNet201
+        - DenseNet264
     """
     def __init__(self, image_size, num_class, growth_rate):
         self.image_size = image_size
@@ -39,15 +44,6 @@ class DenseNetModel(DeepLearningModel):
         super().__init__()
 
     def init_block(self, input):
-        """
-        Create the initial block of the DenseNet model.
-
-        Parameters:
-            input: Input tensor for the initial block.
-
-        Returns:
-            TensorFlow tensor representing the output of the initial block.
-        """
         x = Conv2D(64, (7, 7), strides=2, padding="same", kernel_initializer="he_normal")(input)
         x = BatchNormalization()(x)
         x = ReLU()(x)
@@ -55,34 +51,12 @@ class DenseNetModel(DeepLearningModel):
         return x
 
     def BN_ReLU_Conv(self, input, num_feature, kernel=3):
-        """
-        Apply a BN-ReLU-Conv layer with specified parameters.
-
-        Parameters:
-            input: Input tensor for the layer.
-            num_feature (int): The number of output features.
-            kernel (int): The kernel size for the convolution.
-
-        Returns:
-            TensorFlow tensor representing the output of the BN-ReLU-Conv layer.
-        """
         x = BatchNormalization()(input)
         x = ReLU()(x)
         x = Conv2D(num_feature, (kernel, kernel), padding="same", kernel_initializer="he_normal")(x)
         return x
 
     def Dense_block(self, input, num_feature, num_layer):
-        """
-        Create a dense block with the given number of layers.
-
-        Parameters:
-            input: Input tensor for the dense block.
-            num_feature (int): The number of feature maps.
-            num_layer (int): The number of layers in the dense block.
-
-        Returns:
-            TensorFlow tensor representing the output of the dense block.
-        """
         for i in range(num_layer):
             input_tensor = input if i == 0 else x
             x = self.BN_ReLU_Conv(input_tensor, num_feature * 4, kernel=1)
@@ -91,15 +65,6 @@ class DenseNetModel(DeepLearningModel):
         return x
 
     def Transit_block(self, input):
-        """
-        Create a transition block to reduce spatial dimensions.
-
-        Parameters:
-            input: Input tensor for the transition block.
-
-        Returns:
-            TensorFlow tensor representing the output of the transition block.
-        """
         x = self.BN_ReLU_Conv(input, input.shape[-1] // 2, kernel=1)
         x = AveragePooling2D(strides=2)(x)
         return x
@@ -107,18 +72,24 @@ class DenseNetModel(DeepLearningModel):
 
 class DenseNet121(DenseNetModel):
     """
-    Implementation of DenseNet-121 architecture.
+    Subclass of DenseNetModel with specific configuration.
+
+    Inherits from DenseNetModel.
+
+    Example:
+        ```python
+        # Example usage to create a DenseNet121 model
+        model = DenseNet121(image_size=224, num_class=10, growth_rate=32)
+        ```
+
+    Note: Inherits parameters from DenseNetModel.
     """
     def __init__(self, image_size, num_class, growth_rate=32):
-        """
-        Initializes the DenseNet-121 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            growth_rate (int): The growth rate for the model.
-        """
-        super().__init__(image_size=image_size, num_class=num_class, growth_rate=growth_rate)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class, 
+            growth_rate=growth_rate,
+        )
 
     def build_model(self):
         # Input layer
@@ -128,7 +99,7 @@ class DenseNet121(DenseNetModel):
         # Dense block
         for idx, config in enumerate([6, 12, 24, 6]):
             x = self.Dense_block(x, self.growth_rate, config)
-            if idx != 3:  # ignore transit block at final
+            if idx != 3: # ignore transit block at final
                 x = self.Transit_block(x)
 
         # Output
@@ -146,18 +117,24 @@ class DenseNet121(DenseNetModel):
 
 class DenseNet169(DenseNetModel):
     """
-    Implementation of DenseNet-169 architecture.
+    Subclass of DenseNetModel with specific configuration.
+
+    Inherits from DenseNetModel.
+
+    Example:
+        ```python
+        # Example usage to create a DenseNet169 model
+        model = DenseNet169(image_size=224, num_class=10, growth_rate=32)
+        ```
+
+    Note: Inherits parameters from DenseNetModel.
     """
     def __init__(self, image_size, num_class, growth_rate=32):
-        """
-        Initializes the DenseNet-169 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            growth_rate (int): The growth rate for the model.
-        """
-        super().__init__(image_size=image_size, num_class=num_class, growth_rate=growth_rate)
+        super().__init__(
+            image_size=image_size, 
+            num_class=num_class, 
+            growth_rate=growth_rate,
+        )
 
     def build_model(self):
         # Input layer
@@ -185,17 +162,19 @@ class DenseNet169(DenseNetModel):
 
 class DenseNet201(DenseNetModel):
     """
-    Implementation of DenseNet-201 architecture.
-    """    
+    Subclass of DenseNetModel with specific configuration.
+
+    Inherits from DenseNetModel.
+
+    Example:
+        ```python
+        # Example usage to create a DenseNet201 model
+        model = DenseNet201(image_size=224, num_class=10, growth_rate=32)
+        ```
+
+    Note: Inherits parameters from DenseNetModel.
+    """ 
     def __init__(self, image_size, num_class, growth_rate=32):
-        """
-        Initializes the DenseNet-201 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            growth_rate (int): The growth rate for the model.
-        """
         super().__init__(image_size=image_size, num_class=num_class, growth_rate=growth_rate)
 
     def build_model(self):
@@ -224,17 +203,19 @@ class DenseNet201(DenseNetModel):
 
 class DenseNet264(DenseNetModel):
     """
-    Implementation of DenseNet-264 architecture.
-    """    
+    Subclass of DenseNetModel with specific configuration.
+
+    Inherits from DenseNetModel.
+
+    Example:
+        ```python
+        # Example usage to create a DenseNet264 model
+        model = DenseNet264(image_size=224, num_class=10, growth_rate=32)
+        ```
+
+    Note: Inherits parameters from DenseNetModel.
+    """
     def __init__(self, image_size, num_class, growth_rate=32):
-        """
-        Initializes the DenseNet-264 model with specified parameters.
-        
-        Args:
-            image_size (int): The input image size.
-            num_class (int): The number of output classes.
-            growth_rate (int): The growth rate for the model.
-        """
         super().__init__(image_size=image_size, num_class=num_class, growth_rate=growth_rate)
 
     def build_model(self):

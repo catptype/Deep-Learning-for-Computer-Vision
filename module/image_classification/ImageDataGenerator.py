@@ -3,7 +3,17 @@ from .DataProcessor import DataProcessor as processor
 from .ImageAugmentation import ImageAugmentation
 
 class ErrorHandler:
+    """
+    Error handling utility for input validation.
 
+    Methods:
+        validate_input(input): Validates the format of input data.
+        validate_image_size(image_size): Validates the format of image_size.
+        validate_translation(translate_range): Validates the format of translate_range.
+        validate_rotation(rotation_range): Validates the format of rotation_range.
+
+    Note: This class is designed for validating input parameters related to ImageDataGenerator class.
+    """
     @staticmethod
     def validate_input(input):
         if not isinstance(input, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in input):
@@ -31,12 +41,33 @@ class ErrorHandler:
         
 class ImageDataGenerator:
     """
-    Image Data Generator for preprocessing and creating TensorFlow datasets from image data.
+    Data generator for image classification tasks with preprocessing options such as image augmentation and validation split.
 
-    This class provides methods for generating TensorFlow datasets from input data for training
-    deep learning models. It supports various preprocessing options such as resizing, augmentation,
-    and validation data splitting.
+    Methods:
+        generate_dataset_from_generator(batch_size, balance=False, train_drop_remainder=False): Generates a TensorFlow dataset using a generator.
+        generate_dataset_from_tensor_slices(batch_size, balance=False, train_drop_remainder=False): Generates a TensorFlow dataset using `tf.data.Dataset.from_tensor_slices`.
 
+    Example:
+        ```python
+        # Example usage of image data generator
+        generator = ImageDataGenerator(
+            input=data_list,
+            image_size=(224, 224),
+            keep_aspect_ratio=True,
+            label_mode="onehot",
+            horizontal_flip=True,
+            vertical_flip=False,
+            translate_range=(0.1, 0.1),
+            rotation_range=20,
+            border_method="constant",
+            validation_split=0.2
+        )
+
+        train_dataset, test_dataset = generator.generate_dataset_from_generator(batch_size=32)
+        ```
+
+    Note: This class is designed to generate TensorFlow datasets for training and testing
+    image classification models with various preprocessing options.
     """
     def __init__(
         self, 
@@ -51,22 +82,6 @@ class ImageDataGenerator:
         border_method="constant", # "constant" or "replicate"
         validation_split=0.0,
     ):
-        """
-        Initializes the ImageDataGenerator.
-
-        Args:
-            input (list): A list of input data as tuples (image file path, label string).
-            image_size (tuple or int): A tuple specifying the desired image dimensions (width, height), or an integer for a square image.
-            keep_aspect_ratio (bool): If True, maintains the image's aspect ratio during resizing.
-            label_mode (str): The label encoding mode, either "oneshot" for one-hot encoding or "index" for label indices.
-            horizontal_flip (bool): If True, applies horizontal image flipping during data augmentation.
-            vertical_flip (bool): If True, applies vertical image flipping during data augmentation.
-            translate_range (tuple or float): A tuple specifying translation range (x, y) as a percentage of image size, or a float for equal horizontal and vertical translation.
-            rotation_range (int): An integer specifying the rotation range in (-rotation_range, rotation_range) degrees.
-            border_method (str): The method for handling borders during augmentation, either "constant" or "replicate".
-            validation_split (float): The fraction of data to use for validation.
-        """
-
         # Error handler
         ErrorHandler.validate_input(input)
         ErrorHandler.validate_image_size(image_size)
@@ -155,17 +170,6 @@ class ImageDataGenerator:
     
     # Public methods
     def generate_dataset_from_generator(self, batch_size, balance=False, train_drop_remainder=False):
-        """
-        Generates TensorFlow datasets for training and testing from the input data.
-
-        Args:
-            batch_size (int): The batch size for the generated datasets.
-            balance (bool): If True, balances the data distribution in the training dataset.
-            train_drop_remainder (bool): If True, drops the last batch if it has fewer samples than the batch size.
-
-        Returns:
-            tuple: A tuple containing the training and testing TensorFlow datasets.
-        """
         def train_generator(data):
             for image_path, label in data:
                 image, label = self.__train_preprocessing(image_path, label)
@@ -221,17 +225,6 @@ class ImageDataGenerator:
         return train_dataset, test_dataset
 
     def generate_dataset_from_tensor_slices(self, batch_size, balance=False, train_drop_remainder=False):
-        """
-        Generates TensorFlow datasets for training and testing from the input data using tf.data.Dataset.from_tensor_slices.
-
-        Args:
-            batch_size (int): The batch size for the generated datasets.
-            balance (bool): If True, balances the data distribution in the training dataset.
-            train_drop_remainder (bool): If True, drops the last batch if it has fewer samples than the batch size.
-
-        Returns:
-            tuple: A tuple containing the training and testing TensorFlow datasets.
-        """
         if not isinstance(batch_size, int):
             raise ValueError("Invalid batch_size. It should be an integer.")
         

@@ -3,9 +3,40 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from icecream import ic
-
 class YOLOv3Augmentation:
+    """
+    Utility class for augmenting images and corresponding annotations for YOLOv3 training dataset.
+
+    Parameters:
+        image_size (tuple): Target size of the augmented image (height, width).
+        translate_range (float or tuple): Range for random translation, either a float or a tuple (max_translation_x, max_translation_y).
+        rotation_range (float): Maximum rotation angle for random rotation.
+
+    Attributes:
+        __image_size (tuple): Target size of the augmented image (height, width).
+        __translate_range (float or tuple): Range for random translation, either a float or a tuple (max_translation_x, max_translation_y).
+        __rotation_range (float): Maximum rotation angle for random rotation.
+
+    Public Methods:
+        horizontal_flip(self, image, annotation_list): Applies horizontal flip augmentation to the image and updates the annotation list accordingly.
+        vertical_flip(self, image, annotation_list): Applies vertical flip augmentation to the image and updates the annotation list accordingly.
+        translation(self, image, annotation_list): Applies random translation augmentation to the image and updates the annotation list accordingly.
+        rotation_complex(self, image, annotation_list): Applies random complex rotation augmentation to the image and updates the annotation list accordingly.
+        rotation(self, image, annotation_list): Applies random rotation augmentation to the image and updates the annotation list accordingly.
+        padding(self, image, annotation_list): Applies padding augmentation to the image and updates the annotation list accordingly.
+
+    Private Methods:
+        __calculate_diff_area(self, old_box, new_box): Calculates the relative difference in area between two bounding boxes.
+        __flip(self, image, annotation_list, flip_code): Flips the image and updates the annotation list based on the flip direction.
+
+    Example:
+        ```python
+        # Example usage of YOLOv3Augmentation class
+        augmentation = YOLOv3Augmentation(image_size=(416, 416), translate_range=(0.1, 0.1), rotation_range=45)
+        augmented_image, augmented_annotations = augmentation.rotation(image, annotation_list)
+        ```
+    """
+
     def __init__(self, image_size, translate_range, rotation_range):
         self.__image_size = image_size
         self.__translate_range = translate_range

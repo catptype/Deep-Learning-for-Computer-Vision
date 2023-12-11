@@ -1,10 +1,7 @@
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (
-    Dense,
-    Flatten,
-    Input,
-)
 import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Flatten, Input
+
 from .transformer_module.ImagePatcher import ImagePatcher
 from .transformer_module.PatchEncoder import PatchEncoder
 from .transformer_module.TransformerEncoder import TransformerEncoder
@@ -12,19 +9,35 @@ from .DeepLearningModel import DeepLearningModel
 
 class CompactVisionTransformer(DeepLearningModel):
     """
-    Compact Vision Transformers (CVT).
+    Custom model implementing a Compact Vision Transformer.
 
-    This class defines a custom deep learning model for Compact Vision Transformers (CVT)
-    that consists of an image patcher, patch encoder, transformer encoder, sequence pooling, and a classification head.
+    Inherits from DeepLearningModel.
 
-    Attributes:
-        image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
-        patch_size (int): The size of image patches.
-        num_class (int): The number of output classes for classification.
-        num_head (int): The number of attention heads in the transformer.
-        latent_size (int): The latent dimension size for patch embeddings.
-        num_transformer (int): The number of transformer encoder layers.
-        mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
+    Parameters:
+        image_size (int): Size of the input images (assumed to be square).
+        patch_size (int): Size of each image patch.
+        num_class (int): Number of classes for classification.
+        num_head (int): Number of attention heads in the Transformer encoder.
+        latent_size (int): Dimensionality of the latent space in the Transformer encoder.
+        num_transformer (int): Number of Transformer encoder blocks.
+        mlp_size (int): Size of the feedforward layer in the Transformer encoder.
+
+    Methods:
+        build_model(): Build the Compact Vision Transformer model.
+
+    Example:
+        ```python
+        # Example usage to create a CompactVisionTransformer model
+        model = CompactVisionTransformer(
+            image_size=224,
+            patch_size=16,
+            num_class=10,
+            num_head=4,
+            latent_size=256,
+            num_transformer=6,
+            mlp_size=512,
+        )
+        ```
 
     """
     def __init__(
@@ -37,18 +50,6 @@ class CompactVisionTransformer(DeepLearningModel):
         num_transformer,
         mlp_size,
     ):
-        """
-        Constructor method for initializing the CVTModel.
-
-        Args:
-            image_size (int): The size of the input image (e.g., 224 for a 224x224 image).
-            patch_size (int): The size of image patches.
-            num_class (int): The number of output classes for classification.
-            num_head (int): The number of attention heads in the transformer.
-            latent_size (int): The latent dimension size for patch embeddings.
-            num_transformer (int): The number of transformer encoder layers.
-            mlp_size (int): The size of the multi-layer perceptron (MLP) in the transformer.
-        """
         if image_size % patch_size != 0:
             raise ValueError(f"Image size ({image_size}) is not divisible by the patch size ({patch_size})")
 
@@ -65,12 +66,6 @@ class CompactVisionTransformer(DeepLearningModel):
         super().__init__()
 
     def build_model(self):
-        """
-        Method for building the CVTModel architecture and returning the Keras model.
-
-        Returns:
-            model (Model): The Keras model representing the CVTModel.
-        """
         # Input layer
         input = Input(shape=(self.image_size, self.image_size, 3), name="Input_image")
 

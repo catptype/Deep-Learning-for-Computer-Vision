@@ -6,6 +6,43 @@ from tensorflow.keras.metrics import Metric
 from sklearn.metrics import precision_recall_curve as pr_curve, auc
 
 class MeanAveragePrecision(Metric):
+    """
+    Custom metric for computing the Mean Average Precision (mAP) in object detection tasks.
+
+    Inherits from tf.keras.metrics.Metric.
+
+    Parameters:
+        num_class (int): Number of classes in the dataset.
+        confidence_threshold (float): Confidence threshold for considering detections. Default is 0.2.
+        iou_threshold (float): Intersection over Union (IoU) threshold for non-maximum suppression. Default is 0.5.
+        max_boxes (int or 'auto'): Maximum number of boxes to consider during non-maximum suppression. Default is 'auto'.
+        name (str): Name of the metric. Default is 'mAP'.
+        **kwargs: Additional keyword arguments to be passed to the base class.
+
+    Attributes:
+        num_class (int): Number of classes in the dataset.
+        confidence_threshold (float): Confidence threshold for considering detections.
+        iou_threshold (float): Intersection over Union (IoU) threshold for non-maximum suppression.
+        max_boxes (int or 'auto'): Maximum number of boxes to consider during non-maximum suppression.
+
+    Private Methods:
+        __pre_processing(tensor): Pre-process the input tensor to handle invalid boxes.
+        __decoder(tensor): Decode the YOLO tensor into object confidence, box coordinates, and class probabilities.
+    
+    Public Methods:
+        calculate_iou(box1, box2): Calculate the Intersection over Union (IoU) between two bounding boxes.
+        update_state(y_true, y_pred, sample_weight=None): Update the state of the metric based on true and predicted values.
+        result(): Compute and return the Mean Average Precision (mAP) score.
+        get_config(): Get the configuration of the metric.
+        from_config(cls, config): Create an instance of the metric from a configuration dictionary.
+
+    Example:
+        ```python
+        # Example usage
+        mAP_metric = MeanAveragePrecision(num_class=20)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[mAP_metric])
+        ```
+    """
     def __init__(self, num_class, confidence_threshold=0.2, iou_threshold=0.5, max_boxes='auto', name='mAP', **kwargs):
         super(MeanAveragePrecision, self).__init__(name=name, **kwargs)
         self.num_class = num_class

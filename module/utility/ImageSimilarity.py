@@ -4,7 +4,20 @@ import numpy as np
 from numpy.linalg import norm
 
 class ImageSimilarity:
+    """
+    Utility class for retrieving similar images based on feature vectors.
 
+    Methods:
+        random_query_image(json_file): Selects a random image from the provided JSON file and returns its index and path.
+        get_similar_image(json_file, query_idx): Retrieves a list of images sorted by similarity to the query image.
+
+    Example:
+        ```python
+        # Example usage of ImageSimilarity class
+        query_idx, query_path = ImageSimilarity.random_query_image('image_data.json')
+        similar_images = ImageSimilarity.get_similar_image('image_data.json', query_idx)
+        ```
+    """
     @staticmethod
     def random_query_image(json_file):
         with open(json_file, 'r') as j:
@@ -39,7 +52,21 @@ class ImageSimilarity:
             return []
 
 class VectorCalculator:
+    """
+    Utility class for calculating vector-based metrics.
 
+    Methods:
+        euclidean_distance(query_vector, dataset_vector): Computes the Euclidean distance between a query vector and a dataset of vectors.
+        cosine_similarity(query_vector, dataset_vector): Computes the cosine similarity between a query vector and a dataset of vectors.
+
+    Example:
+        ```python
+        # Example usage of VectorCalculator class
+        distances = VectorCalculator.euclidean_distance(query_vector, dataset_vectors)
+        similarities = VectorCalculator.cosine_similarity(query_vector, dataset_vectors)
+        ```
+
+    """
     @staticmethod
     def euclidean_distance(query_vector, dataset_vector):
         if len(query_vector) != len(dataset_vector[0]):

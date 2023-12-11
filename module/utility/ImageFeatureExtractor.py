@@ -5,7 +5,35 @@ from tensorflow.keras.models import load_model
 from .DirectoryProcessor import DirectoryProcessor
 
 class ImageFeatureExtractor:
+    """
+    Utility class for extracting feature vectors from images using a pre-trained model.
 
+    Parameters:
+        h5_file (str): Path to the HDF5 file containing the pre-trained model.
+        batch_size (int): Batch size for processing images in batches.
+
+    Attributes:
+        model (tf.keras.Model): The loaded pre-trained model for feature extraction.
+        batch_size (int): Batch size for processing images in batches.
+
+    Public Methods:
+        __init__(h5_file, batch_size=64): Initializes the ImageFeatureExtractor object.
+        export_json(target_dir): Exports the calculated feature vectors to a JSON file.
+
+    Private Methods:
+        __image_resize(image_path): Resizes an image to match the input size of the pre-trained model.
+        __padding(image): Pads an image to the input size of the pre-trained model.
+        __preprocessing(image_path): Applies image resizing and padding for preprocessing.
+        __calculate_feature(image_path): Calculates feature vectors for a list of images.
+
+    Example:
+        ```python
+        # Example usage of ImageFeatureExtractor class
+        feature_extractor = ImageFeatureExtractor('model.h5', batch_size=32)
+        feature_extractor.export_json(['data/dataset1', 'data/dataset2'])
+        ```
+
+    """
     def __init__(self, h5_file, batch_size=64):
         print("Load model ... ", end="")
         self.model = load_model(h5_file, compile=False)

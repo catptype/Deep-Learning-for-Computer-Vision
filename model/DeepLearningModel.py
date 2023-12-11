@@ -6,19 +6,25 @@ class DeepLearningModel(ABC):
     """
     Abstract base class for deep learning models.
 
+    Provides common methods for building, compiling, training, and evaluating models.
+
     Attributes:
-        model (tf.keras.Model): The neural network model.
-        history (tf.keras.callbacks.History): Training history.
+        model (tf.keras.Model): The constructed deep learning model.
+        history (tf.keras.callbacks.History): History of training metrics.
 
     Methods:
-        build_model(): Abstract method to build the neural network architecture.
-        compile(optimizer, loss, metrics): Compile the model for training.
+        __init__(): Initialize the DeepLearningModel instance.
+        build_model(): Abstract method to be implemented by subclasses for building the model.
+        compile(optimizer, loss, metrics): Compile the model with optimizer, loss, and metrics.
         evaluate(test_data, test_labels): Evaluate the model on test data.
         get_input_shape(): Get the input shape of the model.
-        predict(data): Make predictions on input data.
-        save(name): Save the trained model to a file.
-        summary(): Display a summary of the model's architecture.
-        train(train_data, test_data, epochs, callbacks): Train the model.
+        get_model_name(): Get the name of the model.
+        predict(data): Make predictions using the model.
+        save(name=None): Save the model to a file.
+        summary(): Display the summary of the model architecture.
+        train(train_data, test_data=None, epochs=10, callbacks=None): Train the model on the given data.
+
+    Note: Subclasses must implement the abstract method `build_model`.
     """
     def __init__(self):
         self.model = self.build_model()
@@ -26,10 +32,6 @@ class DeepLearningModel(ABC):
 
     @abstractmethod
     def build_model(self):
-        """
-        Abstract method to build the neural network architecture.
-        Subclasses must implement this method.
-        """
         pass
 
     def compile(
@@ -38,74 +40,25 @@ class DeepLearningModel(ABC):
         loss=tf.losses.CategoricalCrossentropy(),
         metrics=["accuracy"],
     ):
-        """
-        Compile the model for training.
-
-        Args:
-            optimizer (tf.keras.optimizers.Optimizer): The optimizer for training.
-            loss (tf.keras.losses.Loss): The loss function.
-            metrics (list): List of metrics to monitor during training.
-        """
         if not isinstance(metrics, list):
             raise ValueError("metrics must be list.")
 
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     
     def evaluate(self, test_data, test_labels):
-        """
-        Evaluate the model on test data.
-
-        Args:
-            test_data: Test data.
-            test_labels: Ground truth labels for test data.
-
-        """
         return self.model.evaluate(test_data, test_labels)
 
     def get_input_shape(self):
-        """
-        Get the input shape of the model.
-
-        Returns:
-            tuple: A tuple representing the input shape of the model in the format (height, width, channel).
-        """
         _, height, width, channel = self.model.input_shape
         return (height, width, channel)
 
     def get_model_name(self):
-        """
-        Get the model name.
-
-        Return:
-            Str: model name as string.
-        """
         return self.model.name
     
     def predict(self, data):
-        """
-        Make predictions on input data.
-
-        Args:
-            data: Input data for predictions.
-
-        Returns:
-            Model predictions.
-        """
         return self.model.predict(data)
     
     def save(self, name=None):
-        """
-        Save the trained model to a file.
-
-        Args:
-            name (str): Optional. The name to use for the saved model file (without file extension).
-                        If not provided, the model's name is used as the default name.
-
-        Note:
-            - The saved model file will have an ".h5" extension.
-            - If mixed precision training (FP16) is enabled, "_fp16" is appended to the model name.
-            - The saved model will be stored in the "export model" directory.
-        """
         if name is None:
             model_name = self.model.name
         else:
@@ -116,21 +69,9 @@ class DeepLearningModel(ABC):
         self.model.save(f"export model\\{model_name}.h5", include_optimizer=False)
     
     def summary(self):
-        """
-        Display a summary of the model's architecture.
-        """
         self.model.summary()
 
     def train(self, train_data, test_data=None, epochs=10, callbacks=None):
-        """
-        Train the model.
-
-        Args:
-            train_data: Training data.
-            test_data: Validation data (optional).
-            epochs (int): Number of training epochs.
-            callbacks (list): List of callbacks for training.
-        """
         if self.history is None:
             # Train the model from scratch and store the training history
             self.history = self.model.fit(train_data, epochs=epochs, validation_data=test_data, callbacks=callbacks)

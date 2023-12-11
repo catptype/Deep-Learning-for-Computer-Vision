@@ -11,44 +11,38 @@ from tensorflow.keras.layers import (
     Multiply,
 )
 
-
 class CBAM_Module(Layer):
     """
-    Implementation of the Convolutional Block Attention Module (CBAM).
-    
-    This class defines a custom layer CBAM_Module that implements a mechanism for capturing both channel-wise and 
-    spatial-wise attention in a convolutional neural network. CBAM is used to enhance the representational power of 
-    the network by selectively emphasizing important features.
-    
-    Attributes:
-        num_instances (int): Keeps track of the number of CBAM instances created.
-    
-    Args:
-        ratio (int): The reduction ratio used in the channel attention mechanism.
+    Custom layer implementing a Convolutional Block Attention Module (CBAM).
+
+    Inherits from tf.keras.layers.Layer.
+
+    Parameters:
+        ratio (int): Reduction ratio for the channel attention mechanism.
+        **kwargs: Additional keyword arguments to be passed to the base class.
+
+    Methods:
+        build(input_shape): Build the layer by initializing the necessary components.
+        call(input): Apply the layer to the input tensor, performing channel and spatial attention.
+        get_config(): Get the configuration of the layer.
+
+    Example:
+        ```python
+        # Example usage in functional API
+        # ... (previous layers)
+        x = CBAM_Module(ratio=16)(previous_layer)
+        # ... (add other layers)
+        ```
     """
     num_instances = 0
 
     def __init__(self, ratio=16, **kwargs):
-        """
-        Initializes a CBAM_Module instance.
-
-        Args:
-            ratio (int): The reduction ratio used in the channel attention mechanism.
-        """
         CBAM_Module.num_instances += 1
         layer_name = f"CBAM_Module_{CBAM_Module.num_instances}"
         super(CBAM_Module, self).__init__(name=layer_name)
         self.ratio = ratio
 
     def build(self, input_shape):
-        """
-        Builds the CBAM_Module layer.
-
-        This method is responsible for creating the necessary layers and parameters used in the CBAM module.
-        
-        Args:
-            input_shape (tuple): The shape of the input tensor to the CBAM_Module layer.
-        """
         num_channel = input_shape[-1]
         # Channel_Attention
         ### Shared layers
@@ -60,15 +54,6 @@ class CBAM_Module(Layer):
         super().build(input_shape)
 
     def call(self, input):
-        """
-        Defines the forward pass of the CBAM_Module layer.
-
-        Args:
-            input (tf.Tensor): The input tensor to the CBAM_Module layer.
-
-        Returns:
-            tf.Tensor: The output tensor after applying channel-wise and spatial-wise attention.
-        """
         # Channel_Attention
         ### Global Max Pool
         GMP_pool = GlobalMaxPool2D()(input)

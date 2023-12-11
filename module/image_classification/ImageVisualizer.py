@@ -4,22 +4,21 @@ import numpy as np
 
 class ImageVisualizer:
     """
-    A utility class for visualizing images and their corresponding labels from a TensorFlow dataset.
+    Utility class for visualizing image datasets.
 
     Methods:
-        display_batch(dataset, label_list, figsize=(10, 10)): Display a batch of images with their labels from a TensorFlow dataset.
+        display_batch(dataset, label_list, figsize=(10, 10)): Displays a batch of images from the given dataset with corresponding labels.
 
+    Example:
+        ```python
+        # Example usage of image visualizer
+        ImageVisualizer.display_batch(dataset=train_dataset, label_list=class_labels, figsize=(12, 12))
+        ```
+
+    Note: This class provides a simple method for visualizing image batches with corresponding labels.
     """
     @staticmethod
     def display_batch(dataset, label_list, figsize=(10, 10)):
-        """
-        Display a batch of images with their labels from a TensorFlow dataset.
-
-        Parameters:
-            dataset (tf.data.Dataset): The TensorFlow dataset containing image-label pairs.
-            label_list (list): A list of label strings or classes.
-            figsize (tuple, optional): The size of the figure to display the images. Default is (10, 10).
-        """
         plt.figure(figsize=figsize)
         
         for images, labels in dataset.take(1):

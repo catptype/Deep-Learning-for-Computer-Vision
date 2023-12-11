@@ -2,32 +2,32 @@ import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 from tensorflow.keras import backend as K
 
-
 class F1Score(Metric):
     """
-    Custom F1 Score Metric for TensorFlow/Keras models.
+    Custom metric for computing the F1 score in classification tasks.
 
-    This metric calculates the F1 Score, a measure of a model's accuracy, by considering both precision and recall.
+    Inherits from tf.keras.metrics.Metric.
 
-    Args:
-        **kwargs: Additional keyword arguments to pass to the Metric base class.
+    Parameters:
+        **kwargs: Additional keyword arguments to be passed to the base class.
 
     Attributes:
-        name (str): The name of the metric, set to 'f1'.
-        true_positives (tf.Variable): Variable to track the count of true positives.
-        false_positives (tf.Variable): Variable to track the count of false positives.
-        false_negatives (tf.Variable): Variable to track the count of false negatives.
+        true_positives (tf.Variable): Running total of true positives.
+        false_positives (tf.Variable): Running total of false positives.
+        false_negatives (tf.Variable): Running total of false negatives.
 
     Methods:
-        update_state(y_true, y_pred, sample_weight=None):
-            Update the metric's internal counters based on true and predicted values.
-        result():
-            Compute the F1 Score based on the internal counters.
-        get_config():
-            Get the configuration of the metric for serialization.
-        from_config(cls, config):
-            Create an instance of the metric from a configuration dictionary.
+        update_state(y_true, y_pred, sample_weight=None): Update the state of the metric based on true and predicted values.
+        result(): Compute and return the current F1 score.
+        get_config(): Get the configuration of the metric.
+        from_config(cls, config): Create an instance of the metric from a configuration dictionary.
 
+    Example:
+        ```python
+        # Example usage
+        f1_metric = F1Score()
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=[f1_metric])
+        ```
     """
     def __init__(self, **kwargs):
         super(F1Score, self).__init__(name='f1', **kwargs)
