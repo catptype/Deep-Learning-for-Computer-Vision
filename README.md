@@ -26,9 +26,9 @@ This repository serves as a digital archive of my journey into deep learning. My
   - NumPy
   - JSON
 
-## Model Implementation
+## Implementations
 
-### CNN Architecture
+### CNN Architecture Models
 
 | Models                    | Paper Link                                      | Code Link         |
 |---------------------------|-------------------------------------------------|-------------------|
@@ -40,14 +40,27 @@ This repository serves as a digital archive of my journey into deep learning. My
 | ResNeXt                   | [Paper](https://arxiv.org/abs/1611.05431)       | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/ResNeXtModel.py)          |
 | Res2Net                   | [Paper](https://arxiv.org/abs/1904.01169)       | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/Res2NetModel.py)          |
 
-### Object Detection
+### CNN Architecture Extension Modules
+
+| Module                    | Paper Link                                      | Code Link         |
+|---------------------------|-------------------------------------------------|-------------------|
+| Squeeze-and-Excitation Networks (SE block) | [Paper](https://arxiv.org/abs/1709.01507) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/extension/SE_Module.py) |
+| Convolutional Block Attention Module (CBAM) | [Paper](https://arxiv.org/abs/1807.06521) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/extension/CBAM_Module.py) |
+
+### CNN Architecture Evaluation Module
+
+| Module                    | Paper Link                                      | Code Link         |
+|---------------------------|-------------------------------------------------|-------------------|
+| Gradient-weighted Class Activation Mapping (Gran-CAM) | [Paper](https://arxiv.org/abs/1610.02391) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/evaluate/GranCAM.py) |
+
+### Object Detection Models
 
 | Models                   | Paper Link                                      | Code Link         |
 |--------------------------|-------------------------------------------------|-------------------|
-| You Only Look Once (YOLO) loss function | [Paper](https://arxiv.org/abs/1506.02640)        | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/loss/YOLOLoss.py)          |
-| You Only Look Once (YOLO) version 3 | [Paper](https://arxiv.org/abs/1804.02767)        | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/YOLOv3.py)          |
+| You Only Look Once (YOLO) loss function | [Paper](https://arxiv.org/abs/1506.02640)        | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/loss/YOLOLoss.py)          |
+| You Only Look Once (YOLO) model version 3 | [Paper](https://arxiv.org/abs/1804.02767)        | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/YOLOv3.py)          |
 
-### Transformer
+### Transformer Models
 
 | Models                   | Paper Link                                      | Code Link         |
 |--------------------------|-------------------------------------------------|-------------------|
@@ -55,45 +68,31 @@ This repository serves as a digital archive of my journey into deep learning. My
 | Compact Convolutional Transformer (CCT) | [Paper](https://arxiv.org/abs/2104.05704) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/CompactConvolutionalTransformer.py) |
 | Compact Vision Transformer (CVT) | [Paper](https://arxiv.org/abs/2104.05704) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/CompactVisionTransformer.py) |
 
-## Module Implementation
+### Other Implementations
 
-### Extension Modules
-
-| Module                    | Paper Link                                      | Code Link         |
-|---------------------------|-------------------------------------------------|-------------------|
-| Squeeze-and-Excitation Networks (SE block) | [Paper](https://arxiv.org/abs/1709.01507) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/SE_Module.py) |
-| Convolutional Block Attention Module (CBAM) | [Paper](https://arxiv.org/abs/1807.06521) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/CBAM_Module.py) |
-
-### Evaluation module
-| Module                    | Paper Link                                      | Code Link         |
-|---------------------------|-------------------------------------------------|-------------------|
-| Gradient-weighted Class Activation Mapping (Gran-CAM) | [Paper](https://arxiv.org/abs/1610.02391) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/evaluate/GranCAM.py) |
-
-## Other Implementation
-
-### Data Generators
+#### Data Generators
 | Data Generators           | Code Link         |
 |---------------------------|-------------------|
 | Image data generator for image classifcation | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/image_classification) |
 | Image data generator for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/object_detection) |
 
-### Evaluation Metrics
+#### Evaluation Metrics
 | Metrics                   | Code Link         |
 |---------------------------|-------------------|
-| Confusion matrix | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/evaluate/ConfusionMatrix.py) |
-| F1 score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/F1Score.py) |
-| Mean Average Precision (mAP) for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/metric/MeanAveragePrecision.py) |
+| Confusion matrix | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/evaluate/ConfusionMatrix.py) |
+| F1 score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/metric/F1Score.py) |
+| Mean Average Precision (mAP) for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/metric/MeanAveragePrecision.py) |
 
-### Utilities
+#### Utilities
 | Utilities                 | Code Link         |
 |---------------------------|-------------------|
 | Directory processor | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/DirectoryProcessor.py) |
 | Text-based progress bar | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/TextProgressBar.py) |
 
-### Applications 
+## Applications 
 | Applications              | Links         |
 |---------------------------|-------------------|
-| Image organizer based on class prediction | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageOrganizer.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Organzier.ipynb)|
-| Image similarity retrieval | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageSimilarity.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
-| Image feature vector DB generator (JSON format) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/utility/ImageFeatureExtractor.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
+| Image organizer based on class prediction | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/application/ImageOrganizer.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Organzier.ipynb)|
+| Image similarity retrieval | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/application/ImageSimilarity.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
+| Image feature vector DB generator (JSON format) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/application/ImageFeatureExtractor.py) [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Image%20Similarity.ipynb) |
 | Manga Dialogue Detection with OCR | [Demo](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/Application%20-%20Manga%20Dialogue%20Detection%20with%20OCR.ipynb) |
