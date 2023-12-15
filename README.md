@@ -41,6 +41,15 @@ In this repository, you'll find a collection of hands-on implementations coverin
 
 ### Class Diagram
 
+<div style="display: flex; justify-content: center;">
+  <div style="margin: 10px;">
+    <figure style="text-align: center;">
+      <img src="https://raw.githubusercontent.com/catptype/DeepLearning-SelfStudy/main/docs/Class%20Diagram.png" style="max-height:auto;width:auto">
+      <figcaption>Class diagram</figcaption>
+    </figure>
+  </div>
+</div>
+
 ### CNN Architecture Models
 
 | Models                    | Paper Link                                      | Code Link         |
