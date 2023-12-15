@@ -12,8 +12,8 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.models import Model
 from .DeepLearningModel import DeepLearningModel
-from .SE_Module import SE_Module
-from .CBAM_Module import CBAM_Module
+from .extension.SE_Module import SE_Module
+from .extension.CBAM_Module import CBAM_Module
 
 
 class Res2NetModel(DeepLearningModel):
