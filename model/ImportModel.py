@@ -3,22 +3,33 @@ from .DeepLearningModel import DeepLearningModel
 
 class ImportModel(DeepLearningModel):
     """
-    A class for importing and loading pre-trained deep learning models from .h5 files.
+    A class for importing pre-trained deep learning models from a saved HDF5 file (.h5).
+
+    This class extends the DeepLearningModel base class and provides a method to build the model
+    from the specified HDF5 file. If the model contains custom Keras layers, it attempts to load
+    them using the appropriate custom objects.
+
+    Parameters:
+    - h5file (str): The path to the HDF5 file containing the pre-trained model.
 
     Attributes:
-        h5file (str): The path to the .h5 file containing the pre-trained model.
+    - h5file (str): The path to the HDF5 file containing the pre-trained model.
 
     Methods:
-        __init__(self, h5file): Initialize the ImportModel instance with the path to the .h5 file.
-        build_model(self): Load and build the pre-trained model, handling custom Keras layers if present.
+    - build_model(): Attempts to load the pre-trained model from the HDF5 file and handles
+      the case of custom Keras layers, loading them with specified custom objects if necessary.
+
+    Example:
+    ```python
+    # Example usage of ImportModel class
+    model = ImportModel("path/to/pretrained_model.h5")
+    ```
+
+    Note:
+    The custom objects for handling Keras layers are imported from specific modules within
+    the package using relative imports. Ensure that the necessary modules are accessible.
     """
     def __init__(self, h5file):
-        """
-        Initialize an ImportModel instance.
-
-        Parameters:
-            h5file (str): The path to the .h5 file containing the pre-trained model.
-        """
         if not h5file.endswith(".h5"):
             raise ValueError("Invalid: The h5file must have a .h5 extension.")
         
@@ -26,25 +37,17 @@ class ImportModel(DeepLearningModel):
         super().__init__()
 
     def build_model(self):
-        """
-        Load and build the pre-trained model, handling custom Keras layers if present.
-
-        If the model contains custom Keras layers, this method loads the model with the necessary custom objects.
-
-        Returns:
-            tf.keras.Model: The loaded pre-trained model.
-        """
         try:
             print("Loading model ...")
             model = tf.keras.models.load_model(self.h5file, compile=False)
             print("Model loaded successfully. No custom Keras layers detected.")
         except ValueError:
-            print("Error: Custom Keras layers detected.\nLoading model with custom objects ...", end="")
-            from .transformer_module.ClassToken import ClassToken
-            from .transformer_module.ConvToken import ConvToken
-            from .transformer_module.ImagePatcher import ImagePatcher
-            from .transformer_module.PatchEncoder import PatchEncoder
-            from .transformer_module.TransformerEncoder import TransformerEncoder
+            print("ValueError: Custom Keras layers detected.\nLoading model with custom objects ...", end="")
+            from .transformer.ClassToken import ClassToken
+            from .transformer.ConvToken import ConvToken
+            from .transformer.ImagePatcher import ImagePatcher
+            from .transformer.PatchEncoder import PatchEncoder
+            from .transformer.TransformerEncoder import TransformerEncoder
             
             custom_objects = {
                 'ImagePatcher': ImagePatcher,
@@ -55,6 +58,6 @@ class ImportModel(DeepLearningModel):
             }
 
             model = tf.keras.models.load_model(self.h5file, custom_objects=custom_objects, compile=False)
-            print("Complete")
+            print("COMPLETE")
         
         return model
