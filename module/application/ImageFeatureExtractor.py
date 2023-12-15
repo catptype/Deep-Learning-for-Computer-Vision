@@ -2,7 +2,7 @@ import cv2
 import json
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from .DirectoryProcessor import DirectoryProcessor
+from ..utility.DirectoryProcessor import DirectoryProcessor
 
 class ImageFeatureExtractor:
     """
@@ -18,7 +18,7 @@ class ImageFeatureExtractor:
 
     Public Methods:
         __init__(h5_file, batch_size=64): Initializes the ImageFeatureExtractor object.
-        export_json(target_dir): Exports the calculated feature vectors to a JSON file.
+        export_json(dir_list): Exports the calculated feature vectors to a JSON file.
 
     Private Methods:
         __image_resize(image_path): Resizes an image to match the input size of the pre-trained model.
@@ -112,11 +112,11 @@ class ImageFeatureExtractor:
         return feature_list
     
     # Public method
-    def export_json(self, target_dir):
+    def export_json(self, dir_list):
         json_path = f"{self.model.name}.json"
         image_path_list = []
 
-        for dir in target_dir:
+        for dir in dir_list:
             image_path_list.extend(DirectoryProcessor.get_only_files(dir, [".jpg", ".png"], include_sub_dir=True))
         
         print("Calculate database feature vector ...")
