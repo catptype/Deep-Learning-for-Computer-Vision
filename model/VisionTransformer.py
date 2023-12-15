@@ -2,10 +2,10 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, LayerNormalization
 
-from .transformer_module.ClassToken import ClassToken
-from .transformer_module.ImagePatcher import ImagePatcher
-from .transformer_module.PatchEncoder import PatchEncoder
-from .transformer_module.TransformerEncoder import TransformerEncoder
+from .transformer.ClassToken import ClassToken
+from .transformer.ImagePatcher import ImagePatcher
+from .transformer.PatchEncoder import PatchEncoder
+from .transformer.TransformerEncoder import TransformerEncoder
 from .DeepLearningModel import DeepLearningModel
 
 
