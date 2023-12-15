@@ -31,10 +31,10 @@ In this repository, you'll find a collection of hands-on implementations coverin
     - [Evaluation Module](#evaluation-module)
   - [Object Detection Models](#object-detection-models)
   - [Transformer Models](#transformer-models)
-  - [Other Implementations](#other-implementations)
-    - [Data Generators](#data-generators)
-    - [Evaluation Metrics](#evaluation-metrics)
-    - [Utilities](#utilities)
+- [Other Implementations](#other-implementations)
+  - [Data Generators](#data-generators)
+  - [Evaluation Metrics](#evaluation-metrics)
+  - [Utilities](#utilities)
 - [Applications](#applications)
 
 ## Implementations
@@ -89,16 +89,16 @@ In this repository, you'll find a collection of hands-on implementations coverin
 | Compact Convolutional Transformer (CCT) | [Paper](https://arxiv.org/abs/2104.05704) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/CompactConvolutionalTransformer.py) |
 | Compact Vision Transformer (CVT) | [Paper](https://arxiv.org/abs/2104.05704) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/CompactVisionTransformer.py) |
 
-### Other Implementations
+## Other Implementations
 
-#### Data Generators
+### Data Generators
 
 | Generator Type           | Code Link         |
 |--------------------------|-------------------|
 | Image Classification     | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/image_classification) |
 | Object Detection         | [Code](https://github.com/catptype/DeepLearning-SelfStudy/tree/main/module/object_detection) |
 
-#### Evaluation Metrics
+### Evaluation Metrics
 
 | Metrics                   | Code Link         |
 |---------------------------|-------------------|
@@ -106,7 +106,7 @@ In this repository, you'll find a collection of hands-on implementations coverin
 | F1 Score | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/metric/F1Score.py) |
 | Mean Average Precision (mAP) for object detection | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/module/metric/MeanAveragePrecision.py) |
 
-#### Utilities
+### Utilities
 
 | Utilities                 | Code Link         |
 |---------------------------|-------------------|
