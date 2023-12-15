@@ -4,9 +4,18 @@ A personal repository documenting my deep learning self-study journey with pract
 ## Table of Contents
 - [Introduction](#introduction)
 - [Tools, Frameworks, and Libraries](#tools-frameworks-and-libraries)
-- [Model Implementation](#model-implementation)
-- [Module Implementation](#module-implementation)
-- [Other Implementations](#other-implementations)
+- [Class Diagram](#class-diagram)
+- [Implementations](#implementations)
+  - [CNN Architecture Models](#cnn-architecture-models)
+    - [Extension Modules](#extension-modules)
+    - [Evaluation Module](#evaluation-module)
+  - [Object Dtection Model](#object-detection-models)
+  - [Transformer Models](#transformer-models)
+  - [Other Implementations](#other-implementations)
+    - [Data Generators](#data-generators)
+    - [Evaluation Metrics](#evaluation-metrics)
+    - [Utilities](#utilities)
+- [Applications](#applications)
 
 ## Introduction
 This repository serves as a digital archive of my journey into deep learning. My primary focus is on practical implementations using TensorFlow and Keras. Through this self-study, I aim to gain a deeper understanding of deep learning concepts and techniques.
@@ -26,6 +35,8 @@ This repository serves as a digital archive of my journey into deep learning. My
   - NumPy
   - JSON
 
+## Class Diagram
+
 ## Implementations
 
 ### CNN Architecture Models
@@ -40,14 +51,14 @@ This repository serves as a digital archive of my journey into deep learning. My
 | ResNeXt                   | [Paper](https://arxiv.org/abs/1611.05431)       | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/ResNeXtModel.py)          |
 | Res2Net                   | [Paper](https://arxiv.org/abs/1904.01169)       | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/Res2NetModel.py)          |
 
-### CNN Architecture Extension Modules
+#### Extension Modules
 
 | Module                    | Paper Link                                      | Code Link         |
 |---------------------------|-------------------------------------------------|-------------------|
 | Squeeze-and-Excitation Networks (SE block) | [Paper](https://arxiv.org/abs/1709.01507) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/extension/SE_Module.py) |
 | Convolutional Block Attention Module (CBAM) | [Paper](https://arxiv.org/abs/1807.06521) | [Code](https://github.com/catptype/DeepLearning-SelfStudy/blob/main/model/extension/CBAM_Module.py) |
 
-### CNN Architecture Evaluation Module
+#### Evaluation Module
 
 | Module                    | Paper Link                                      | Code Link         |
 |---------------------------|-------------------------------------------------|-------------------|
