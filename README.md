@@ -45,6 +45,9 @@ In this repository, you'll find a collection of hands-on implementations coverin
   <div style="margin: 10px;">
     <figure style="text-align: center;">
       <img src="https://raw.githubusercontent.com/catptype/DeepLearning-SelfStudy/main/docs/Class%20Diagram.png" style="max-height:auto;width:auto">
+    <figcaption>
+      Class diagram for <a href="https://github.com/catptype/Deep-Learning-for-Computer-Vision/tree/main/model">DeepLearningModel</a>
+    </figcaption>
     </figure>
   </div>
 </div>
