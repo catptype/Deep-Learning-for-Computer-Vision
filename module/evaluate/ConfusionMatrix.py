@@ -17,7 +17,7 @@ class ConfusionMatrix:
         data_list (list): A list of tuples containing image paths and corresponding true labels.
         label_list (list): A list of unique class labels.
         model_name (str, optional): A custom name for the model. If not provided, the model's name from the HDF5 file is used.
-        batch (int): Batch size for processing images during prediction. Default is 32.
+        force_batch (int): Batch size for processing images during prediction. Default is 32.
 
     Attributes:
         confusion_matrix (numpy.ndarray): The confusion matrix generated based on model predictions.
@@ -45,7 +45,7 @@ class ConfusionMatrix:
         cm.export_report()
         ```
     """
-    def __init__(self, h5_file, data_list, label_list, model_name=None, batch=32):
+    def __init__(self, h5_file, data_list, label_list, model_name=None, force_batch=32):
         if not h5_file.endswith(".h5"):
             raise ValueError("Invalid: The h5_file must have a .h5 extension.")
         
@@ -55,7 +55,7 @@ class ConfusionMatrix:
         self.__image_path = [image for image, _ in data_list]
         self.__true_label = [label for _, label in data_list]
         self.__label_list = label_list
-        self.__predict_label = self.__predict(batch)
+        self.__predict_label = self.__predict(force_batch)
         self.confusion_matrix = self.__generate_confusion_matrix()
         self.text_report = self.__generate_text_report()
         self.figure_report = self.__visualize_report()
